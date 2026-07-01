@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>J.A.R.V.I.S.</title>
+<meta name="description" content="Assistente pessoal com voz, HUD futurista e IA">
+<meta name="theme-color" content="#04070c">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="boot-screen">
+  <div class="boot-core"></div>
+  <div class="boot-text">
+    <span class="boot-line" data-delay="0">INICIALIZANDO NÚCLEO ARC...</span>
+    <span class="boot-line" data-delay="400">CARREGANDO PROTOCOLOS J.A.R.V.I.S...</span>
+    <span class="boot-line" data-delay="800">CALIBRANDO INTERFACE NEURAL...</span>
+    <span class="boot-line" data-delay="1200">SISTEMA ONLINE</span>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+
+  <!-- Grid / scan overlay -->
+  <div class="hud-grid"></div>
+  <div class="hud-vignette"></div>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◈</span>
+      <span class="brand-text">J.A.R.V.I.S.</span>
+    </div>
+    <div class="status-pill" id="status-pill">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">EM ESPERA</span>
+    </div>
+    <div class="clock" id="clock">00:00:00</div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <main class="layout">
+
+    <!-- LEFT: TELEMETRY -->
+    <aside class="panel panel-left" id="panel-left">
+      <h2 class="panel-title">TELEMETRIA</h2>
+
+      <div class="telemetry-block">
+        <span class="tele-label">DATA</span>
+        <span class="tele-value" id="tele-date">--/--/----</span>
+      </div>
+      <div class="telemetry-block">
+        <span class="tele-label">CONEXÃO</span>
+        <span class="tele-value" id="tele-net">VERIFICANDO</span>
+      </div>
+      <div class="telemetry-block">
+        <span class="tele-label">BATERIA</span>
+        <span class="tele-value" id="tele-battery">--%</span>
+      </div>
+      <div class="telemetry-block">
+        <span class="tele-label">MICROFONE</span>
+        <span class="tele-value" id="tele-mic">INATIVO</span>
+      </div>
+      <div class="telemetry-block">
+        <span class="tele-label">LATÊNCIA IA</span>
+        <span class="tele-value" id="tele-latency">-- ms</span>
+      </div>
+
+      <div class="wave-monitor">
+        <span class="tele-label">ONDA DE ÁUDIO</span>
+        <canvas id="wave-canvas" width="260" height="60"></canvas>
+      </div>
+    </aside>
+
+    <!-- CENTER: CORE -->
+    <section class="core-stage">
+      <div class="core-wrap">
+        <canvas id="reactor-canvas" width="480" height="480"></canvas>
+        <div class="core-label" id="core-label">JARVIS</div>
+      </div>
+      <div class="transcript" id="transcript" aria-live="polite">
+        <p class="transcript-hint">Toque no núcleo ou digite abaixo para começar.</p>
+      </div>
+    </section>
+
+    <!-- RIGHT: LOG -->
+    <aside class="panel panel-right" id="panel-right">
+      <h2 class="panel-title">REGISTRO</h2>
+      <div class="log-list" id="log-list"></div>
+    </aside>
+
+  </main>
+
+  <!-- COMMAND BAR -->
+  <footer class="cmdbar">
+    <button id="mic-btn" class="mic-btn" aria-label="Ativar microfone">
+      <svg viewBox="0 0 24 24" width="26" height="26">
+        <path fill="currentColor" d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3z"/>
+        <path fill="currentColor" d="M19 11a1 1 0 10-2 0 5 5 0 01-10 0 1 1 0 10-2 0 7 7 0 006 6.93V20H9a1 1 0 100 2h6a1 1 0 100-2h-2v-2.07A7 7 0 0019 11z"/>
+      </svg>
+      <span class="mic-pulse"></span>
+    </button>
+    <input type="text" id="cmd-input" class="cmd-input" placeholder="Fale ou digite um comando..." autocomplete="off">
+    <button id="send-btn" class="send-btn" aria-label="Enviar">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg>
+    </button>
+  </footer>
+
+  <button id="panel-toggle" class="panel-toggle" aria-label="Alternar painéis">≡</button>
+</div>
+
+<script src="js/reactor.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/commands.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
