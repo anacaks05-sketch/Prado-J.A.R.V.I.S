@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jarvis-v4-1-boot-fix';
+const CACHE_NAME = 'jarvis-v4-3-whatsapp';
 const APP_SHELL = [
   './',
   './index.html',

@@ -529,3 +529,65 @@ html,body{ height:100%; background:var(--bg-void); color:var(--white); font-fami
   .hud-widget-systems{ display:none; }
   .voice-wave-canvas{ top:75.2%; width:22vw; }
 }
+
+
+/* ---------- JARVIS V4.2 — CORREÇÃO DO MICROFONE ---------- */
+.mic-btn{
+  opacity:1 !important;
+  pointer-events:auto !important;
+  z-index:30 !important;
+  background:radial-gradient(circle at center, rgba(130,250,255,.32), rgba(0,217,255,.12) 62%, rgba(0,0,0,.08)) !important;
+  border:1px solid rgba(125,245,255,.86) !important;
+  color:#eaffff !important;
+  box-shadow:0 0 16px rgba(0,217,255,.55), inset 0 0 18px rgba(0,217,255,.24) !important;
+  cursor:pointer !important;
+}
+.mic-btn::after{
+  content:"";
+  position:absolute;
+  inset:-9px;
+  border:1px solid rgba(0,217,255,.28);
+  border-radius:50%;
+  animation:mic-soft-ring 1.8s ease-out infinite;
+}
+.mic-btn svg{
+  filter:drop-shadow(0 0 8px rgba(0,217,255,.9));
+}
+.mic-btn.active{
+  background:radial-gradient(circle at center, rgba(255,80,110,.92), rgba(255,59,92,.38) 62%, rgba(0,0,0,.12)) !important;
+  border-color:rgba(255,170,190,.95) !important;
+  box-shadow:0 0 26px rgba(255,59,92,.75), inset 0 0 18px rgba(255,255,255,.24) !important;
+}
+@keyframes mic-soft-ring{
+  0%{ transform:scale(.88); opacity:.88; }
+  100%{ transform:scale(1.35); opacity:0; }
+}
+.mic-help{
+  position:absolute;
+  left:50%;
+  top:80.2%;
+  transform:translateX(-50%);
+  z-index:31;
+  width:min(360px, 88vw);
+  padding:9px 12px;
+  border:1px solid rgba(0,217,255,.32);
+  border-radius:14px;
+  background:rgba(2,12,24,.78);
+  color:#aef6ff;
+  font-family:var(--font-body);
+  font-size:13px;
+  line-height:1.35;
+  text-align:center;
+  box-shadow:0 0 20px rgba(0,217,255,.13);
+  backdrop-filter:blur(10px);
+}
+.mic-help.hidden{
+  display:none !important;
+}
+@media (max-width: 460px){
+  .mic-help{
+    top:81%;
+    font-size:12px;
+    width:92vw;
+  }
+}

@@ -20,6 +20,7 @@
     transcript: $('transcript'),
     logList: $('log-list'),
     micBtn: $('mic-btn'),
+    micHelp: $('mic-help'),
     cmdInput: $('cmd-input'),
     sendBtn: $('send-btn'),
     panelLeft: $('panel-left'),
@@ -175,6 +176,20 @@
 
   function setStatusMessage(text){
     if(els.statusBoxText) els.statusBoxText.textContent = text;
+  }
+
+  function showMicHelp(text, autoHideMs = 4200){
+    if(!els.micHelp) return;
+    els.micHelp.textContent = text;
+    els.micHelp.classList.remove('hidden');
+    clearTimeout(showMicHelp._timer);
+    if(autoHideMs){
+      showMicHelp._timer = setTimeout(()=> els.micHelp.classList.add('hidden'), autoHideMs);
+    }
+  }
+
+  function hideMicHelp(){
+    if(els.micHelp) els.micHelp.classList.add('hidden');
   }
 
   // ---------- Clock ----------
@@ -389,22 +404,29 @@
 
   // ---------- Mic ----------
   if(els.micBtn){
-    els.micBtn.addEventListener('click', ()=>{
-      if(jarvisState === 'idle') startListening();
+    const micTap = (event)=>{
+      event.preventDefault();
+      event.stopPropagation();
+      if(jarvisState === 'idle' || jarvisState === 'error') startListening();
       else if(jarvisState === 'listening') stopListeningAndSend();
-    });
+    };
+    els.micBtn.addEventListener('pointerdown', micTap);
+    els.micBtn.addEventListener('click', micTap);
   }
 
   function startListening(){
     if(!window.Voice || !Voice.supported()){
       log('Reconhecimento de voz não suportado neste navegador.', 'ERRO');
+      showMicHelp('Este navegador não suporta voz. Use Chrome/Edge no computador, Safari no iPhone, ou digite o comando no campo abaixo.', 6500);
       addBubble('system', 'Este navegador não suporta reconhecimento de voz. Use o campo de texto abaixo.');
       setState('error');
       setTimeout(()=>setState('idle'), 1500);
       return;
     }
+    hideMicHelp();
     setState('listening');
     setStatusMessage('Jarvis ouvindo. Pode falar agora.');
+    showMicHelp('Ouvindo... fale agora.', 2500);
     log('Escutando...', 'ÁUDIO');
     Voice.startListening({
       onResult: ({interim, final})=>{ if(els.cmdInput) els.cmdInput.value = final || interim; },
@@ -419,6 +441,7 @@
         log('Erro de voz: ' + err, 'ERRO');
         setState('error');
         setStatusMessage('Falha no módulo de voz. Tente novamente.');
+        showMicHelp(String(err || 'Falha no microfone. Verifique a permissão do navegador.'), 7500);
         setTimeout(()=>setState('idle'), 1400);
       }
     });
@@ -459,7 +482,8 @@
         addActionBubble((opened ? 'Abrir novamente: ' : '') + (local.label || 'Abrir link'), local.url);
         log((opened ? 'Link externo aberto: ' : 'Link externo preparado: ') + (local.label || local.url), 'AÇÃO');
       }
-      setStatusMessage('Ação local executada com sucesso.');
+      if(local.type && String(local.type).includes('whatsapp')) setStatusMessage('WhatsApp preparado. Revise e aperte enviar.');
+      else setStatusMessage('Ação local executada com sucesso.');
       Voice.speak(reply, { onBoundaryAmplitude: pushAmplitude, onEnd: ()=> setState('idle') });
       return;
     }
@@ -520,6 +544,7 @@
       setStatusMessage('J.A.R.V.I.S. online. Núcleo aguardando comando.');
       log('J.A.R.V.I.S. inicializado.', 'SISTEMA');
       updateSystemList();
+      showMicHelp('Clique no microfone e permita o acesso quando o navegador pedir.', 4800);
     }catch(e){
       console.error('Falha ao liberar boot:', e);
       if(window.releaseJarvisBoot) window.releaseJarvisBoot();

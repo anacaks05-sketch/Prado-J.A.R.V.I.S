@@ -1,3 +1,26 @@
+
+## Atualização V4.3 — WhatsApp
+
+Comandos adicionados:
+
+- `Abrir WhatsApp`
+- `Mandar WhatsApp para 11999999999 mensagem Oi, tudo bem?`
+- `Responder WhatsApp para 11999999999 mensagem Já te retorno.`
+- `Salvar contato WhatsApp João 11999999999`
+- `Mandar WhatsApp para João mensagem Cheguei em casa.`
+- `Listar contatos WhatsApp`
+- `Apagar contato WhatsApp João`
+
+Observação: por segurança, esta versão abre o WhatsApp com a mensagem pronta para revisão. Envio automático sem confirmação exige integração oficial com WhatsApp Business Cloud API.
+
+
+## Correção V4.2 — Microfone
+
+- Botão do microfone ficou visível e clicável.
+- O navegador agora força a solicitação de permissão do microfone.
+- Mensagens de erro aparecem na tela quando o microfone estiver bloqueado.
+- Se o navegador não suportar reconhecimento de voz, use o campo de texto.
+
 # J.A.R.V.I.S. — PWA de assistente pessoal com voz premium
 
 HUD futurista estilo Homem de Ferro com núcleo animado, figura holográfica premium, reconhecimento de voz em pt-BR, resposta por voz ElevenLabs com análise real do áudio reproduzido, chat com IA via proxy serverless, comandos locais rápidos, abertura de rascunho no Gmail e app instalável como PWA.

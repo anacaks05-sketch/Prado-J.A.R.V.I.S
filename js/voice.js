@@ -64,15 +64,39 @@
     micSource = null;
   }
 
-  function startListening({onResult, onEnd, onAmplitude, onError}){
+  async function ensureMicPermission(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error('microfone indisponível neste navegador');
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    return stream;
+  }
+
+  async function startListening({onResult, onEnd, onAmplitude, onError}){
     if(!supported()){
-      onError && onError('unsupported');
+      onError && onError('Este navegador não suporta reconhecimento de voz. No computador, use Chrome/Edge. No iPhone, use Safari atualizado ou digite o comando.');
       return;
     }
+
     onResultCallback = onResult;
     onAmplitudeCallback = onAmplitude;
-    recognition = initRecognition();
     let finalTranscript = '';
+    let permissionStream = null;
+
+    try{
+      // Primeiro força o navegador a pedir permissão do microfone.
+      permissionStream = await ensureMicPermission();
+      permissionStream.getTracks().forEach(t=>t.stop());
+    }catch(e){
+      onError && onError('Permissão do microfone bloqueada. Clique no cadeado ao lado do endereço do site e permita Microfone.');
+      return;
+    }
+
+    recognition = initRecognition();
+
+    recognition.onstart = ()=>{
+      listening = true;
+    };
 
     recognition.onresult = (event)=>{
       let interim = '';
@@ -85,7 +109,14 @@
     };
 
     recognition.onerror = (e)=>{
-      onError && onError(e.error || 'erro desconhecido');
+      const map = {
+        'not-allowed':'Microfone bloqueado. Clique no cadeado do navegador e permita Microfone.',
+        'service-not-allowed':'Serviço de voz bloqueado pelo navegador.',
+        'no-speech':'Não ouvi nada. Tente falar mais perto do microfone.',
+        'audio-capture':'Nenhum microfone encontrado ou liberado.',
+        'network':'Falha de rede no reconhecimento de voz.'
+      };
+      onError && onError(map[e.error] || e.error || 'erro desconhecido');
     };
 
     recognition.onend = ()=>{
@@ -96,9 +127,9 @@
 
     try{
       recognition.start();
-      listening = true;
       startMicVisualizer();
     }catch(e){
+      stopMicVisualizer();
       onError && onError(String(e));
     }
   }

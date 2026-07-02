@@ -44,6 +44,169 @@
     return raw.slice(start + startLen, end).replace(/^[:\s,.-]+|[:\s,.-]+$/g, '').trim();
   }
 
+
+  const WHATSAPP_CONTACTS_KEY = 'jarvis_whatsapp_contacts';
+
+  function getWhatsAppContacts(){
+    try{ return JSON.parse(localStorage.getItem(WHATSAPP_CONTACTS_KEY) || '{}'); }
+    catch(e){ return {}; }
+  }
+
+  function saveWhatsAppContacts(map){
+    localStorage.setItem(WHATSAPP_CONTACTS_KEY, JSON.stringify(map || {}));
+  }
+
+  function normalizeContactName(name){
+    return String(name || '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ');
+  }
+
+  function normalizeBrazilPhone(raw){
+    let digits = String(raw || '').replace(/\D+/g, '');
+
+    // Se o usuário passar telefone BR sem código do país, adiciona 55.
+    // Ex.: 11999999999 => 5511999999999
+    if((digits.length === 10 || digits.length === 11) && !digits.startsWith('55')){
+      digits = '55' + digits;
+    }
+
+    return digits;
+  }
+
+  function buildWhatsAppUrl({phone='', message=''} = {}){
+    const digits = normalizeBrazilPhone(phone);
+    const encoded = encodeURIComponent(message || '');
+
+    if(digits){
+      return 'https://wa.me/' + digits + (encoded ? '?text=' + encoded : '');
+    }
+
+    // Sem número: abre WhatsApp com texto pronto para o usuário escolher o contato.
+    // Em alguns navegadores isso abre o WhatsApp Web; no celular normalmente abre o app.
+    return encoded ? 'https://wa.me/?text=' + encoded : 'https://web.whatsapp.com/';
+  }
+
+  function extractMessageAfter(raw, markers){
+    const lower = raw.toLowerCase();
+    let best = -1, bestLen = 0;
+    for(const m of markers){
+      const idx = lower.indexOf(m);
+      if(idx !== -1 && (best === -1 || idx < best)){
+        best = idx;
+        bestLen = m.length;
+      }
+    }
+    if(best === -1) return '';
+    return raw.slice(best + bestLen).replace(/^[:\s,.-]+|[:\s,.-]+$/g, '').trim();
+  }
+
+  function parseWhatsAppCommand(rawText){
+    const raw = rawText.trim();
+    const text = raw.toLowerCase();
+
+    if(/^(abrir|abra|abre)\s+(meu\s+)?(whatsapp|zap|zapzap|zape)/.test(text)){
+      return {
+        type: 'open_url',
+        url: buildWhatsAppUrl(),
+        label: 'Abrir WhatsApp',
+        speak: 'Abrindo o WhatsApp agora.'
+      };
+    }
+
+    // Salvar contato WhatsApp João 11999999999
+    // Salvar contato do zap Maria 75999999999
+    const saveMatch = raw.match(/^(salvar|guardar|cadastrar)\s+(contato\s+)?(do\s+)?(whatsapp|zap|zapzap|zape)\s+(.+?)\s+(\+?\d[\d\s().-]{7,})$/i);
+    if(saveMatch){
+      const name = saveMatch[5].trim();
+      const phone = normalizeBrazilPhone(saveMatch[6]);
+      if(!phone || phone.length < 11){
+        return 'Não consegui entender o número. Me diga com DDD, por exemplo: salvar contato WhatsApp João 11999999999.';
+      }
+      const contacts = getWhatsAppContacts();
+      contacts[normalizeContactName(name)] = { name, phone };
+      saveWhatsAppContacts(contacts);
+      return `Contato de WhatsApp salvo: ${name}.`;
+    }
+
+    if(/^(listar|mostrar|ver)\s+(contatos\s+)?(do\s+)?(whatsapp|zap)/.test(text)){
+      const contacts = Object.values(getWhatsAppContacts());
+      if(!contacts.length) return 'Você ainda não tem contatos de WhatsApp salvos no Jarvis.';
+      return 'Contatos de WhatsApp salvos: ' + contacts.map(c => `${c.name}`).join(', ') + '.';
+    }
+
+    const delMatch = raw.match(/^(apagar|remover|excluir)\s+(contato\s+)?(do\s+)?(whatsapp|zap)\s+(.+)$/i);
+    if(delMatch){
+      const name = delMatch[5].trim();
+      const key = normalizeContactName(name);
+      const contacts = getWhatsAppContacts();
+      if(!contacts[key]) return `Não encontrei o contato ${name} no WhatsApp do Jarvis.`;
+      delete contacts[key];
+      saveWhatsAppContacts(contacts);
+      return `Contato ${name} removido do WhatsApp do Jarvis.`;
+    }
+
+    const looksLikeWhatsApp = /(whatsapp|zap|zapzap|zape)/.test(text) &&
+      /(mandar|mande|enviar|envie|responder|responda|chamar|chame|escrever|preparar)/.test(text);
+
+    if(!looksLikeWhatsApp) return null;
+
+    const message = extractMessageAfter(raw, [
+      ' mensagem ', ' mensagem:', ' dizendo ', ' falar ', ' falando ',
+      ' texto ', ' texto:', ' com a mensagem ', ' com texto '
+    ]);
+
+    const phoneMatch = raw.match(/(\+?\d[\d\s().-]{7,})/);
+    let phone = phoneMatch ? normalizeBrazilPhone(phoneMatch[1]) : '';
+
+    let toName = extractBetween(raw, [' para ', ' pra ', ' ao ', ' a '], [
+      ' mensagem ', ' mensagem:', ' dizendo ', ' falar ', ' falando ',
+      ' texto ', ' texto:', ' com a mensagem ', ' com texto '
+    ]);
+
+    if(phone && toName.includes(phoneMatch[1])) toName = '';
+
+    if(!phone && toName){
+      const contacts = getWhatsAppContacts();
+      const saved = contacts[normalizeContactName(toName)];
+      if(saved) phone = saved.phone;
+    }
+
+    const finalMessage = message || raw
+      .replace(/^(mandar|mande|enviar|envie|responder|responda|chamar|chame|escrever|preparar)\s+(um\s+)?(whatsapp|zap|zapzap|zape)\s*/i, '')
+      .replace(/^(para|pra)\s+/i, '')
+      .trim();
+
+    if(!phone && toName){
+      return {
+        type: 'whatsapp_missing_phone',
+        url: buildWhatsAppUrl({message: finalMessage}),
+        label: 'Abrir WhatsApp',
+        speak: `Não tenho o número de ${toName} salvo. Vou abrir o WhatsApp com a mensagem pronta. Para mandar por nome depois, diga: salvar contato WhatsApp ${toName} número com DDD.`
+      };
+    }
+
+    if(!phone){
+      return {
+        type: 'whatsapp_share',
+        url: buildWhatsAppUrl({message: finalMessage}),
+        label: 'Abrir WhatsApp com mensagem',
+        speak: 'Preparei a mensagem. Vou abrir o WhatsApp para você escolher a conversa e enviar.'
+      };
+    }
+
+    return {
+      type: 'whatsapp_compose',
+      url: buildWhatsAppUrl({ phone, message: finalMessage }),
+      label: 'Abrir mensagem no WhatsApp',
+      speak: 'Mensagem do WhatsApp preparada. Revise e aperte enviar.'
+    };
+  }
+
+
   function parseGmailCommand(rawText){
     const raw = rawText.trim();
     const text = raw.toLowerCase();
@@ -83,6 +246,9 @@
   // (nesse caso, o texto segue para a IA).
   function tryLocal(rawText){
     const text = rawText.toLowerCase().trim();
+
+    const whatsappAction = parseWhatsAppCommand(rawText);
+    if(whatsappAction) return whatsappAction;
 
     const gmailAction = parseGmailCommand(rawText);
     if(gmailAction) return gmailAction;
@@ -136,5 +302,5 @@
     return null;
   }
 
-  window.Commands = { tryLocal, getReminders, saveReminders, buildGmailComposeUrl };
+  window.Commands = { tryLocal, getReminders, saveReminders, buildGmailComposeUrl, buildWhatsAppUrl, getWhatsAppContacts, saveWhatsAppContacts };
 })();
