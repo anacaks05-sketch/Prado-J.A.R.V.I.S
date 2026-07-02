@@ -1,4 +1,24 @@
 
+## V4.6 Mobile Real — Correção de celular
+
+Esta versão corrige os principais pontos do celular:
+
+- anéis e núcleo animados por canvas, sem depender só de CSS;
+- núcleo/bola do peito pulsando de verdade;
+- microfone no celular usando gravação real com MediaRecorder;
+- transcrição por `/api/elevenlabs-stt` usando ElevenLabs Speech to Text;
+- botão `Tocar voz do Jarvis` quando o celular bloquear áudio automático;
+- WhatsApp continua abrindo por botão de ação.
+
+Variáveis na Vercel:
+- `ANTHROPIC_API_KEY`
+- `ELEVENLABS_API_KEY`
+- `ELEVENLABS_VOICE_ID`
+- opcional: `ELEVENLABS_STT_MODEL_ID=scribe_v2`
+
+Atenção: na ElevenLabs, a chave precisa ter acesso a **Text to Speech** e também **Fala para Texto / Speech to Text**.
+
+
 ## V4.5 Estável Mobile
 
 Esta versão foi simplificada para funcionar melhor no celular:

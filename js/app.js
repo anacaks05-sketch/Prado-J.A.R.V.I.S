@@ -1,4 +1,4 @@
-/* app.js — JARVIS V4.5 ESTÁVEL MOBILE */
+/* app.js — JARVIS V4.6 MOBILE REAL: canvas vivo + gravação real STT */
 (function(){
   const $ = (id)=>document.getElementById(id);
 
@@ -17,6 +17,7 @@
     actionOpenBtn: $('action-open-btn'),
     actionHideBtn: $('action-hide-btn'),
     runtimeHud: $('runtime-hud'),
+    fxCanvas: $('fx-canvas'),
     miniSpectrum: $('mini-spectrum'),
     voiceWaveCanvas: $('voice-wave-canvas'),
     hudProcessingValue: $('hud-processing-value'),
@@ -30,22 +31,23 @@
 
   let state = 'idle';
   let listening = false;
+  let recordingMode = null; // speech | recorder
   let activeAction = null;
-  let wave = new Array(34).fill(0.12);
+  let wave = new Array(42).fill(0.12);
   let fakeAudioTimer = null;
-
-  function showBootSafe(){
-    setTimeout(releaseBoot, 1600);
-    setTimeout(releaseBoot, 3500);
-  }
+  let fxT = 0;
 
   function releaseBoot(){
     if(els.app) els.app.classList.remove('hidden');
     if(els.boot) els.boot.classList.add('hidden');
     try{ window.dispatchEvent(new Event('resize')); }catch(e){}
+    resizeFxCanvas();
     setState('idle');
     showHelp('Jarvis pronto. Toque no microfone ou digite um comando.', 4500);
   }
+
+  setTimeout(releaseBoot, 1500);
+  setTimeout(releaseBoot, 3600);
 
   function showHelp(text, ms=4500){
     if(!els.micHelp) return;
@@ -77,7 +79,7 @@
     };
     const status = {
       idle:'ÓTIMO',
-      listening:'OUVINDO',
+      listening:'GRAVANDO',
       thinking:'ANALISANDO',
       speaking:'FALANDO',
       error:'ALERTA'
@@ -97,6 +99,7 @@
     if(!els.transcript) return;
     const hint = els.transcript.querySelector('.transcript-hint');
     if(hint) hint.remove();
+
     const div = document.createElement('div');
     div.className = 'bubble ' + role;
     div.textContent = text;
@@ -107,17 +110,28 @@
   function setAction(action){
     activeAction = action || null;
     if(!els.actionPanel || !els.actionOpenBtn) return;
+
     if(!action){
       els.actionPanel.classList.add('hidden');
       return;
     }
+
     els.actionOpenBtn.textContent = action.label || 'Abrir ação';
     els.actionPanel.classList.remove('hidden');
+  }
+
+  function isMobile(){
+    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || window.innerWidth <= 820;
   }
 
   function openAction(action){
     action = action || activeAction;
     if(!action) return;
+
+    if(action.type === 'play_voice'){
+      playPendingVoice();
+      return;
+    }
 
     const isWhatsapp = action.type && String(action.type).includes('whatsapp');
     const url = isWhatsapp && isMobile() && action.mobileUrl ? action.mobileUrl : (action.url || action.webUrl || action.mobileUrl);
@@ -128,7 +142,6 @@
     }
 
     try{
-      // Para WhatsApp no celular, location.href é mais confiável que window.open.
       if(isWhatsapp && isMobile()){
         window.location.href = url;
         if(action.url && action.url !== url){
@@ -145,10 +158,6 @@
     }
   }
 
-  function isMobile(){
-    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || window.innerWidth <= 800;
-  }
-
   function normalizeAmp(value){
     const v = Math.max(0.04, Math.min(1, Number(value) || 0.08));
     wave.push(v);
@@ -160,9 +169,9 @@
   function startFakeAudio(mode){
     stopFakeAudio();
     fakeAudioTimer = setInterval(()=>{
-      const base = mode === 'speaking' ? 0.28 : mode === 'listening' ? 0.18 : 0.10;
+      const base = mode === 'speaking' ? 0.26 : mode === 'listening' ? 0.18 : mode === 'thinking' ? 0.12 : 0.08;
       normalizeAmp(base + Math.random() * 0.46);
-    }, 90);
+    }, 80);
   }
 
   function stopFakeAudio(){
@@ -170,22 +179,39 @@
     fakeAudioTimer = null;
   }
 
+  function resizeFxCanvas(){
+    const list = [els.fxCanvas, els.voiceWaveCanvas, els.miniSpectrum].filter(Boolean);
+    list.forEach(canvas=>{
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if(rect.width && rect.height){
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+      }
+    });
+  }
+
+  window.addEventListener('resize', resizeFxCanvas);
+  setTimeout(resizeFxCanvas, 800);
+
   function drawWaveCanvas(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
     if(!ctx) return;
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0,0,w,h);
+
     const color = state === 'listening' ? '#ff3b5c' : state === 'speaking' ? '#00ff9d' : state === 'thinking' ? '#ff9500' : '#00d9ff';
 
     ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = Math.max(1.5, w * 0.005);
     ctx.shadowColor = color;
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 14;
     ctx.beginPath();
+
     wave.forEach((v,i)=>{
       const x = (w/(wave.length-1))*i;
-      const y = h/2 + Math.sin(i*.9 + Date.now()/180) * v * h*.35;
+      const y = h/2 + Math.sin(i*.85 + fxT*.06) * v * h*.38;
       if(i===0) ctx.moveTo(x,y);
       else ctx.lineTo(x,y);
     });
@@ -199,23 +225,94 @@
     if(!ctx) return;
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0,0,w,h);
+
     const color = state === 'listening' ? '#ff3b5c' : state === 'speaking' ? '#00ff9d' : state === 'thinking' ? '#ff9500' : '#00d9ff';
     const bw = w / wave.length;
+
     wave.forEach((v,i)=>{
       const bh = Math.max(3, v*h*.92);
       ctx.globalAlpha = .35 + v*.65;
       ctx.fillStyle = color;
-      ctx.fillRect(i*bw + bw*.22, h-bh, bw*.56, bh);
+      ctx.fillRect(i*bw + bw*.2, h-bh, bw*.6, bh);
     });
     ctx.globalAlpha = 1;
   }
 
+  function drawFxCanvas(){
+    const canvas = els.fxCanvas;
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if(!ctx) return;
+
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    // Posição calibrada para celular e notebook
+    const cx = w * 0.5;
+    const cy = h * (isMobile() ? 0.355 : 0.36);
+    const amp = wave[wave.length-1] || 0.12;
+    const base = Math.min(w, h) * (isMobile() ? 0.285 : 0.18);
+
+    const color = state === 'listening' ? '255,59,92' : state === 'speaking' ? '0,255,157' : state === 'thinking' ? '255,149,0' : '0,217,255';
+
+    function arc(r, start, len, width, alpha){
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(start);
+      ctx.strokeStyle = `rgba(${color},${alpha})`;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.shadowColor = `rgba(${color},.75)`;
+      ctx.shadowBlur = width * 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, len);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Anéis girando de verdade via canvas
+    for(let i=0;i<5;i++){
+      const r = base * (0.82 + i*0.14);
+      const speed = (0.014 + i*0.004) * (i%2 ? -1 : 1);
+      arc(r, fxT*speed + i*.9, Math.PI*1.25, Math.max(1.5, base*0.012), 0.30 + i*0.08);
+      arc(r, -fxT*speed*1.4 + i*1.6, Math.PI*.28, Math.max(1.2, base*0.008), 0.55);
+    }
+
+    // Bola/núcleo pulsando
+    const orbY = h * (isMobile() ? 0.389 : 0.405);
+    const orbR = Math.min(w,h) * (isMobile() ? 0.055 : 0.034) * (1 + amp*.42 + Math.sin(fxT*.09)*.06);
+    const grad = ctx.createRadialGradient(cx, orbY, 0, cx, orbY, orbR*2.4);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(.22, `rgba(${color},.95)`);
+    grad.addColorStop(.68, `rgba(${color},.30)`);
+    grad.addColorStop(1, `rgba(${color},0)`);
+    ctx.fillStyle = grad;
+    ctx.shadowColor = `rgba(${color},.9)`;
+    ctx.shadowBlur = orbR * 1.2;
+    ctx.beginPath();
+    ctx.arc(cx, orbY, orbR*2.1, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Scan vertical
+    const scanY = (h * 0.16) + ((fxT % 210) / 210) * (h * 0.34);
+    const scanGrad = ctx.createLinearGradient(0, scanY-18, 0, scanY+18);
+    scanGrad.addColorStop(0, 'rgba(0,217,255,0)');
+    scanGrad.addColorStop(.5, `rgba(${color},.22)`);
+    scanGrad.addColorStop(1, 'rgba(0,217,255,0)');
+    ctx.fillStyle = scanGrad;
+    ctx.fillRect(w*.22, scanY-18, w*.56, 36);
+  }
+
   function animateHud(){
+    fxT += 1;
+    drawFxCanvas();
     drawWaveCanvas(els.voiceWaveCanvas);
     drawBarsCanvas(els.miniSpectrum);
 
     const pctBase = state === 'thinking' ? 97 : state === 'speaking' ? 91 : state === 'listening' ? 89 : 83;
-    const pct = Math.round(pctBase + Math.sin(Date.now()/900)*4);
+    const pct = Math.round(pctBase + Math.sin(fxT/23)*4);
     if(els.hudProcessingValue) els.hudProcessingValue.textContent = String(pct);
     if(els.statusProgress) els.statusProgress.style.width = pct + '%';
 
@@ -240,16 +337,33 @@
     await unlockAudio();
     setAction(null);
 
-    if(!window.Voice || !Voice.supported()){
-      setState('error');
-      showHelp('Este navegador não suporta microfone por voz. Digite o comando no campo abaixo.', 7000);
-      setMessage('Reconhecimento de voz indisponível neste navegador.');
-      setTimeout(()=>setState('idle'), 1300);
+    const useRecorder = isMobile() && window.Voice && Voice.supportsRecording && Voice.supportsRecording();
+
+    if(useRecorder){
+      startRecorderMic();
       return;
     }
 
+    if(window.Voice && Voice.supported && Voice.supported()){
+      startSpeechRecognitionMic();
+      return;
+    }
+
+    if(window.Voice && Voice.supportsRecording && Voice.supportsRecording()){
+      startRecorderMic();
+      return;
+    }
+
+    setState('error');
+    setMessage('Microfone indisponível neste navegador.');
+    showHelp('Use o campo de texto abaixo. Este navegador bloqueou o microfone.', 7000);
+    setTimeout(()=>setState('idle'), 1300);
+  }
+
+  function startSpeechRecognitionMic(){
     setState('listening');
     listening = true;
+    recordingMode = 'speech';
     startFakeAudio('listening');
     setMessage('Jarvis ouvindo. Fale agora.');
     showHelp('Ouvindo... fale agora.', 3200);
@@ -261,6 +375,7 @@
       onAmplitude: (a)=> normalizeAmp(a),
       onEnd: (finalText)=>{
         listening = false;
+        recordingMode = null;
         stopFakeAudio();
         if(finalText && finalText.trim()){
           if(els.cmdInput) els.cmdInput.value = '';
@@ -273,7 +388,16 @@
       },
       onError: (err)=>{
         listening = false;
+        recordingMode = null;
         stopFakeAudio();
+
+        // Se o navegador falhar no STT nativo, tenta gravador real.
+        if(window.Voice && Voice.supportsRecording && Voice.supportsRecording()){
+          showHelp('Reconhecimento do navegador falhou. Vou usar gravação real.', 2500);
+          startRecorderMic();
+          return;
+        }
+
         setState('error');
         setMessage('Microfone bloqueado ou indisponível.');
         showHelp(String(err || 'Microfone bloqueado. Permita o microfone no navegador.'), 7000);
@@ -282,21 +406,102 @@
     });
   }
 
+  function startRecorderMic(){
+    setState('listening');
+    listening = true;
+    recordingMode = 'recorder';
+    setMessage('Gravando áudio real. Fale por 2 a 6 segundos.');
+    showHelp('Gravando... fale agora. Toque novamente para parar.', 6500);
+    startFakeAudio('listening');
+
+    Voice.startRecordingTranscription({
+      maxMs: 7000,
+      onStart: ()=>{
+        setState('listening');
+      },
+      onAmplitude: (a)=> normalizeAmp(a),
+      onProcessing: ()=>{
+        stopFakeAudio();
+        setState('thinking');
+        setMessage('Transcrevendo sua voz pela ElevenLabs...');
+        showHelp('Processando áudio...', 3500);
+      },
+      onEnd: (finalText)=>{
+        listening = false;
+        recordingMode = null;
+        stopFakeAudio();
+
+        if(finalText && finalText.trim()){
+          if(els.cmdInput) els.cmdInput.value = '';
+          handleCommand(finalText.trim());
+        }else{
+          setState('idle');
+          setMessage('Não consegui entender o áudio.');
+          showHelp('Não consegui entender. Tente falar mais claro ou digite o comando.', 6500);
+        }
+      },
+      onError: (err)=>{
+        listening = false;
+        recordingMode = null;
+        stopFakeAudio();
+        setState('error');
+        setMessage('Falha ao transcrever o áudio.');
+        showHelp(String(err || 'Falha na gravação. Verifique permissão do microfone e Fala para Texto na ElevenLabs.'), 9000);
+        setTimeout(()=>setState('idle'), 1500);
+      }
+    });
+  }
+
   function stopMic(){
     try{ if(window.Voice) Voice.stopListening(); }catch(e){}
+    if(recordingMode === 'recorder'){
+      showHelp('Processando gravação...', 3000);
+    }
     listening = false;
     stopFakeAudio();
+  }
+
+  function showPlayVoiceAction(){
+    setAction({
+      type:'play_voice',
+      label:'Tocar voz do Jarvis'
+    });
+    showHelp('A voz foi gerada. Toque em “Tocar voz do Jarvis”.', 8000);
+  }
+
+  async function playPendingVoice(){
+    setAction(null);
+    setState('speaking');
+    startFakeAudio('speaking');
+    try{
+      if(window.Voice && Voice.playPendingAudio){
+        await Voice.playPendingAudio({
+          onBoundaryAmplitude: (a)=> normalizeAmp(a),
+          onEnd: ()=>{
+            stopFakeAudio();
+            setState('idle');
+          }
+        });
+      }
+    }catch(e){
+      console.error(e);
+      stopFakeAudio();
+      setState('idle');
+      showHelp('Não consegui tocar a voz. Verifique volume e permissão de áudio.', 6000);
+    }
   }
 
   async function speak(text){
     const msg = String(text || '').trim();
     if(!msg) return;
+
     setState('speaking');
     startFakeAudio('speaking');
 
     try{
       if(window.Voice && Voice.speak){
         await Voice.speak(msg, {
+          onBlockedAudio: showPlayVoiceAction,
           onBoundaryAmplitude: (a)=> normalizeAmp(a),
           onEnd: ()=>{
             stopFakeAudio();
@@ -312,6 +517,11 @@
     }catch(e){
       console.warn(e);
       stopFakeAudio();
+      if(e && e.code === 'AUDIO_BLOCKED'){
+        setState('idle');
+        showPlayVoiceAction();
+        return;
+      }
       setState('idle');
     }
   }
@@ -347,7 +557,7 @@
       setMessage(local.type && String(local.type).includes('whatsapp') ? 'WhatsApp preparado. Toque no botão para abrir.' : 'Ação preparada.');
       if(local.url || local.mobileUrl || local.webUrl){
         setAction(local);
-        showHelp('Toque no botão de ação para abrir e confirmar.', 6500);
+        showHelp('Toque no botão de ação para abrir e confirmar.', 7500);
       }
       await speak(reply);
       return;
@@ -393,47 +603,46 @@
 
   function bindEvents(){
     if(els.micBtn){
-      els.micBtn.addEventListener('click', (e)=>{
+      const tapMic = (e)=>{
         e.preventDefault();
         e.stopPropagation();
+        unlockAudio();
         if(listening || state === 'listening') stopMic();
         else startMic();
-      });
-      els.micBtn.addEventListener('touchend', (e)=>{
-        e.preventDefault();
-        e.stopPropagation();
-        if(listening || state === 'listening') stopMic();
-        else startMic();
-      }, {passive:false});
+      };
+      els.micBtn.addEventListener('click', tapMic);
+      els.micBtn.addEventListener('touchend', tapMic, {passive:false});
+      els.micBtn.addEventListener('pointerup', tapMic);
     }
 
     if(els.sendBtn){
-      els.sendBtn.addEventListener('click', (e)=>{
+      const tapSend = (e)=>{
         e.preventDefault();
+        unlockAudio();
         submitText();
-      });
-      els.sendBtn.addEventListener('touchend', (e)=>{
-        e.preventDefault();
-        submitText();
-      }, {passive:false});
+      };
+      els.sendBtn.addEventListener('click', tapSend);
+      els.sendBtn.addEventListener('touchend', tapSend, {passive:false});
     }
 
     if(els.cmdInput){
       els.cmdInput.addEventListener('keydown', (e)=>{
-        if(e.key === 'Enter') submitText();
+        if(e.key === 'Enter'){
+          unlockAudio();
+          submitText();
+        }
       });
       els.cmdInput.addEventListener('focus', unlockAudio);
     }
 
     if(els.actionOpenBtn){
-      els.actionOpenBtn.addEventListener('click', (e)=>{
+      const tapAction = (e)=>{
         e.preventDefault();
+        unlockAudio();
         openAction();
-      });
-      els.actionOpenBtn.addEventListener('touchend', (e)=>{
-        e.preventDefault();
-        openAction();
-      }, {passive:false});
+      };
+      els.actionOpenBtn.addEventListener('click', tapAction);
+      els.actionOpenBtn.addEventListener('touchend', tapAction, {passive:false});
     }
 
     if(els.actionHideBtn){
@@ -444,7 +653,6 @@
     window.addEventListener('offline', ()=>showHelp('Sem internet. Algumas funções podem falhar.', 5000));
   }
 
-  // Segurança contra erro total: mostrar erro na tela em vez de travar.
   window.addEventListener('error', (event)=>{
     console.error(event.error || event.message);
     setState('error');
@@ -453,12 +661,13 @@
   });
 
   bindEvents();
+  resizeFxCanvas();
   animateHud();
 
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', showBootSafe);
+  if(document.readyState === 'complete' || document.readyState === 'interactive'){
+    releaseBoot();
   }else{
-    showBootSafe();
+    document.addEventListener('DOMContentLoaded', releaseBoot);
   }
 
   if('serviceWorker' in navigator){
