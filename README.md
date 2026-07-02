@@ -1,4 +1,21 @@
 
+## Atualização V4.4 — Mobile Pro
+
+- Layout ajustado para celular/PWA.
+- Botão do microfone maior e com desbloqueio de áudio no toque.
+- Voz ElevenLabs usando `ELEVENLABS_VOICE_ID` configurado na Vercel.
+- WhatsApp com botão grande de ação para abrir a conversa no celular.
+- Anel holográfico girando mais forte no mobile.
+- Núcleo/bola do peito piscando e reagindo ao áudio.
+- Onda de voz e base holográfica mais visíveis no celular.
+
+Para WhatsApp por nome, salve uma vez:
+`Salvar contato WhatsApp minha esposa 75999999999`
+
+Depois:
+`Mandar WhatsApp para minha esposa mensagem Oi, tudo bem?`
+
+
 ## Atualização V4.3 — WhatsApp
 
 Comandos adicionados:

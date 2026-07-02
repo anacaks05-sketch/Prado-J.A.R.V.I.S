@@ -77,17 +77,27 @@
     return digits;
   }
 
-  function buildWhatsAppUrl({phone='', message=''} = {}){
+  function buildWhatsAppUrls({phone='', message=''} = {}){
     const digits = normalizeBrazilPhone(phone);
     const encoded = encodeURIComponent(message || '');
 
     if(digits){
-      return 'https://wa.me/' + digits + (encoded ? '?text=' + encoded : '');
+      return {
+        url: 'https://api.whatsapp.com/send?phone=' + digits + (encoded ? '&text=' + encoded : ''),
+        webUrl: 'https://wa.me/' + digits + (encoded ? '?text=' + encoded : ''),
+        mobileUrl: 'whatsapp://send?phone=' + digits + (encoded ? '&text=' + encoded : '')
+      };
     }
 
-    // Sem número: abre WhatsApp com texto pronto para o usuário escolher o contato.
-    // Em alguns navegadores isso abre o WhatsApp Web; no celular normalmente abre o app.
-    return encoded ? 'https://wa.me/?text=' + encoded : 'https://web.whatsapp.com/';
+    return {
+      url: encoded ? 'https://wa.me/?text=' + encoded : 'https://web.whatsapp.com/',
+      webUrl: encoded ? 'https://wa.me/?text=' + encoded : 'https://web.whatsapp.com/',
+      mobileUrl: encoded ? 'whatsapp://send?text=' + encoded : 'whatsapp://send'
+    };
+  }
+
+  function buildWhatsAppUrl(opts){
+    return buildWhatsAppUrls(opts).url;
   }
 
   function extractMessageAfter(raw, markers){
@@ -110,8 +120,8 @@
 
     if(/^(abrir|abra|abre)\s+(meu\s+)?(whatsapp|zap|zapzap|zape)/.test(text)){
       return {
-        type: 'open_url',
-        url: buildWhatsAppUrl(),
+        type: 'whatsapp_open',
+        ...buildWhatsAppUrls(),
         label: 'Abrir WhatsApp',
         speak: 'Abrindo o WhatsApp agora.'
       };
@@ -183,7 +193,7 @@
     if(!phone && toName){
       return {
         type: 'whatsapp_missing_phone',
-        url: buildWhatsAppUrl({message: finalMessage}),
+        ...buildWhatsAppUrls({message: finalMessage}),
         label: 'Abrir WhatsApp',
         speak: `Não tenho o número de ${toName} salvo. Vou abrir o WhatsApp com a mensagem pronta. Para mandar por nome depois, diga: salvar contato WhatsApp ${toName} número com DDD.`
       };
@@ -192,7 +202,7 @@
     if(!phone){
       return {
         type: 'whatsapp_share',
-        url: buildWhatsAppUrl({message: finalMessage}),
+        ...buildWhatsAppUrls({message: finalMessage}),
         label: 'Abrir WhatsApp com mensagem',
         speak: 'Preparei a mensagem. Vou abrir o WhatsApp para você escolher a conversa e enviar.'
       };
@@ -200,7 +210,7 @@
 
     return {
       type: 'whatsapp_compose',
-      url: buildWhatsAppUrl({ phone, message: finalMessage }),
+      ...buildWhatsAppUrls({ phone, message: finalMessage }),
       label: 'Abrir mensagem no WhatsApp',
       speak: 'Mensagem do WhatsApp preparada. Revise e aperte enviar.'
     };
@@ -302,5 +312,5 @@
     return null;
   }
 
-  window.Commands = { tryLocal, getReminders, saveReminders, buildGmailComposeUrl, buildWhatsAppUrl, getWhatsAppContacts, saveWhatsAppContacts };
+  window.Commands = { tryLocal, getReminders, saveReminders, buildGmailComposeUrl, buildWhatsAppUrl, buildWhatsAppUrls, getWhatsAppContacts, saveWhatsAppContacts };
 })();

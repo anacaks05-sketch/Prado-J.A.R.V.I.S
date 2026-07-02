@@ -15,6 +15,28 @@
   let outputSource = null;
   let outputRafId = null;
   let elevenLabsAvailable = null;
+  let unlockedAudioCtx = null;
+
+  async function unlockAudio(){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    try{
+      if(Ctx){
+        if(!unlockedAudioCtx) unlockedAudioCtx = new Ctx();
+        if(unlockedAudioCtx.state === 'suspended') await unlockedAudioCtx.resume();
+        const buffer = unlockedAudioCtx.createBuffer(1, 1, 22050);
+        const source = unlockedAudioCtx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(unlockedAudioCtx.destination);
+        source.start(0);
+      }
+      const el = document.getElementById('jarvis-audio-player');
+      if(el){
+        el.muted = true;
+      }
+    }catch(e){
+      console.warn('Desbloqueio de áudio não concluído:', e);
+    }
+  }
 
   function supported(){ return !!SpeechRecognitionAPI; }
 
@@ -224,8 +246,12 @@
     if(!blob || blob.size === 0) throw new Error('ElevenLabs retornou áudio vazio');
 
     outputObjectUrl = URL.createObjectURL(blob);
-    outputAudio = new Audio(outputObjectUrl);
+    outputAudio = document.getElementById('jarvis-audio-player') || new Audio();
+    outputAudio.pause();
+    outputAudio.src = outputObjectUrl;
     outputAudio.preload = 'auto';
+    outputAudio.playsInline = true;
+    outputAudio.muted = false;
 
     return new Promise((resolve, reject)=>{
       let started = false;
@@ -245,7 +271,7 @@
         stopOutputAudio();
         reject(new Error('Falha ao reproduzir áudio ElevenLabs'));
       };
-      outputAudio.play().catch((err)=>{ stopOutputAudio(); reject(err); });
+      outputAudio.play().catch((err)=>{ stopOutputAudio(); reject(new Error('Áudio bloqueado pelo celular. Toque no microfone ou no botão enviar novamente para liberar a voz.')); });
     });
   }
 
@@ -305,6 +331,7 @@
     startListening,
     stopListening,
     speak,
+    unlockAudio,
     cancelSpeak,
     isListening: ()=>listening,
     elevenLabsReady: ()=>elevenLabsAvailable

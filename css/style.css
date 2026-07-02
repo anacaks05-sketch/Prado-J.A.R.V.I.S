@@ -591,3 +591,207 @@ html,body{ height:100%; background:var(--bg-void); color:var(--white); font-fami
     width:92vw;
   }
 }
+
+
+/* ---------- JARVIS V4.4 MOBILE PRO ---------- */
+.action-panel{
+  position:absolute;
+  left:50%;
+  bottom:142px;
+  transform:translateX(-50%);
+  z-index:60;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px;
+  border:1px solid rgba(0,217,255,.35);
+  border-radius:999px;
+  background:rgba(1,12,24,.86);
+  box-shadow:0 0 24px rgba(0,217,255,.24);
+  backdrop-filter:blur(14px);
+}
+.action-panel.hidden{ display:none !important; }
+.action-open-btn{
+  border:0;
+  border-radius:999px;
+  min-height:44px;
+  padding:0 18px;
+  background:linear-gradient(90deg, rgba(0,217,255,.92), rgba(0,255,157,.88));
+  color:#00131a;
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:12px;
+  letter-spacing:1.2px;
+  cursor:pointer;
+  box-shadow:0 0 18px rgba(0,217,255,.36);
+}
+.action-hide-btn{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  border:1px solid rgba(0,217,255,.22);
+  background:rgba(255,255,255,.04);
+  color:#aef6ff;
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+}
+body[data-jarvis-state="listening"] .chest-orb,
+body[data-jarvis-state="speaking"] .chest-orb{
+  animation-duration:.85s;
+  box-shadow:0 0 28px rgba(0,217,255,1), 0 0 72px rgba(0,255,157,.58);
+}
+body[data-jarvis-state="thinking"] .orbital-ring{
+  border-color:rgba(255,149,0,.58);
+}
+body[data-jarvis-state="listening"] .orbital-ring{
+  border-color:rgba(255,59,92,.58);
+}
+body[data-jarvis-state="speaking"] .orbital-ring{
+  border-color:rgba(0,255,157,.62);
+}
+body[data-jarvis-state="listening"] .voice-wave-canvas,
+body[data-jarvis-state="speaking"] .voice-wave-canvas{
+  opacity:1;
+  filter:drop-shadow(0 0 14px rgba(0,217,255,.65));
+}
+@media (max-width: 780px){
+  #app{
+    min-height:100dvh;
+    background:#01050b;
+  }
+  .core-stage{
+    overflow:hidden;
+  }
+  .approved-ui-bg{
+    object-fit:cover !important;
+    object-position:center top !important;
+    filter:drop-shadow(0 0 20px rgba(0,217,255,.30)) saturate(1.08) contrast(1.04);
+  }
+  .robot-fx{
+    width:72vw !important;
+    height:72vw !important;
+    top:36.5% !important;
+    opacity:1;
+    filter:drop-shadow(0 0 18px rgba(0,217,255,.35));
+  }
+  .ring-a{
+    width:104% !important;
+    height:78% !important;
+    border-color:rgba(0,217,255,.72) !important;
+    border-width:2px !important;
+    animation-duration:5.8s !important;
+  }
+  .ring-b{
+    width:116% !important;
+    height:42% !important;
+    border-color:rgba(126,247,255,.50) !important;
+    border-width:1.5px !important;
+    animation-duration:4.2s !important;
+  }
+  .ring-c{
+    width:52% !important;
+    height:104% !important;
+    border-color:rgba(0,255,157,.34) !important;
+    border-width:1px !important;
+    animation-duration:6.5s !important;
+  }
+  .chest-orb{
+    width:48px !important;
+    height:48px !important;
+    top:39.5% !important;
+    opacity:.98 !important;
+    box-shadow:0 0 30px rgba(0,217,255,.96), 0 0 82px rgba(0,217,255,.50) !important;
+  }
+  .base-rings{
+    width:70% !important;
+    height:18% !important;
+    bottom:15.5% !important;
+  }
+  .base-rings span:nth-child(1){
+    border-width:2px !important;
+    border-color:rgba(0,217,255,.72) !important;
+  }
+  .scan-beam{
+    left:8%;
+    right:8%;
+    opacity:.72;
+  }
+  .voice-wave-canvas{
+    top:72.7% !important;
+    width:54vw !important;
+    height:44px !important;
+  }
+  .mic-btn{
+    top:75.3% !important;
+    width:76px !important;
+    height:76px !important;
+    opacity:1 !important;
+  }
+  .mic-btn svg{
+    width:32px;
+    height:32px;
+  }
+  .mic-help{
+    top:83.3% !important;
+    width:92vw !important;
+    font-size:13px !important;
+    z-index:65 !important;
+  }
+  .action-panel{
+    bottom:126px;
+    width:calc(100vw - 24px);
+    justify-content:center;
+    border-radius:22px;
+  }
+  .action-open-btn{
+    flex:1;
+    min-height:52px;
+    font-size:12px;
+  }
+  .cmdbar{
+    height:82px !important;
+    padding:12px 10px calc(12px + env(safe-area-inset-bottom)) !important;
+    z-index:70;
+  }
+  .cmd-input{
+    height:54px !important;
+    font-size:16px !important;
+  }
+  .send-btn{
+    width:54px !important;
+    height:54px !important;
+  }
+  .transcript{
+    bottom:86px !important;
+    max-height:92px !important;
+    width:96vw !important;
+    z-index:50;
+  }
+  .hud-column{
+    display:none !important;
+  }
+}
+@media (max-width: 420px){
+  .robot-fx{
+    top:35.5% !important;
+    width:78vw !important;
+    height:78vw !important;
+  }
+  .chest-orb{
+    width:42px !important;
+    height:42px !important;
+    top:39.2% !important;
+  }
+  .base-rings{
+    bottom:14.8% !important;
+  }
+  .voice-wave-canvas{
+    top:73.4% !important;
+  }
+  .mic-btn{
+    top:75.8% !important;
+    width:70px !important;
+    height:70px !important;
+  }
+}

@@ -21,6 +21,9 @@
     logList: $('log-list'),
     micBtn: $('mic-btn'),
     micHelp: $('mic-help'),
+    actionPanel: $('action-panel'),
+    actionOpenBtn: $('action-open-btn'),
+    actionHideBtn: $('action-hide-btn'),
     cmdInput: $('cmd-input'),
     sendBtn: $('send-btn'),
     panelLeft: $('panel-left'),
@@ -63,6 +66,8 @@
   let lastReplyLatency = null;
   let perfTick = 0;
   let chartShift = 0;
+  let lastAction = null;
+  let lastGestureTs = 0;
 
   const barsCtx = els.barsCanvas ? els.barsCanvas.getContext('2d') : null;
   const miniCtx = els.miniSpectrum ? els.miniSpectrum.getContext('2d') : null;
@@ -152,16 +157,21 @@
     a.href = url;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
+    a.dataset.url = url;
     a.textContent = label || 'Abrir';
     b.appendChild(a);
     els.transcript.appendChild(b);
     els.transcript.scrollTop = els.transcript.scrollHeight;
   }
 
-  function openExternalUrl(url){
+  function openExternalUrl(url, action){
     try{
+      if(action && action.type && String(action.type).includes('whatsapp')){
+        return openPreparedAction(action);
+      }
       const opened = window.open(url, '_blank', 'noopener,noreferrer');
-      return !!opened;
+      if(!opened && url) window.location.href = url;
+      return true;
     }catch(e){
       console.warn('Abertura externa bloqueada:', e);
       return false;
@@ -190,6 +200,53 @@
 
   function hideMicHelp(){
     if(els.micHelp) els.micHelp.classList.add('hidden');
+  }
+
+  function markGesture(){
+    lastGestureTs = Date.now();
+    if(window.Voice && Voice.unlockAudio) Voice.unlockAudio();
+  }
+
+  function isMobileLike(){
+    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || window.innerWidth <= 780;
+  }
+
+  function showActionPanel(action){
+    if(!action || !action.url || !els.actionPanel || !els.actionOpenBtn) return;
+    lastAction = action;
+    els.actionOpenBtn.textContent = action.label || 'Abrir';
+    els.actionPanel.classList.remove('hidden');
+  }
+
+  function hideActionPanel(){
+    if(els.actionPanel) els.actionPanel.classList.add('hidden');
+  }
+
+  function openPreparedAction(action){
+    if(!action || !action.url) return false;
+    markGesture();
+
+    const mobile = isMobileLike();
+    const nativeUrl = action.mobileUrl || action.url;
+    const webUrl = action.url || action.webUrl || action.mobileUrl;
+
+    try{
+      if(mobile && action.type && String(action.type).includes('whatsapp')){
+        // No celular tenta abrir o app do WhatsApp. Se não abrir, cai para o link web.
+        window.location.href = nativeUrl;
+        setTimeout(()=>{ window.location.href = webUrl; }, 850);
+        return true;
+      }
+
+      const opened = window.open(webUrl, '_blank', 'noopener,noreferrer');
+      if(!opened){
+        window.location.href = webUrl;
+      }
+      return true;
+    }catch(e){
+      console.warn('Abertura da ação bloqueada:', e);
+      try{ window.location.href = webUrl; return true; }catch(_){ return false; }
+    }
   }
 
   // ---------- Clock ----------
@@ -407,11 +464,28 @@
     const micTap = (event)=>{
       event.preventDefault();
       event.stopPropagation();
+      markGesture();
       if(jarvisState === 'idle' || jarvisState === 'error') startListening();
       else if(jarvisState === 'listening') stopListeningAndSend();
     };
     els.micBtn.addEventListener('pointerdown', micTap);
     els.micBtn.addEventListener('click', micTap);
+  }
+
+  if(els.actionOpenBtn){
+    els.actionOpenBtn.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      openPreparedAction(lastAction);
+    });
+    els.actionOpenBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      openPreparedAction(lastAction);
+    });
+  }
+  if(els.actionHideBtn){
+    els.actionHideBtn.addEventListener('click', hideActionPanel);
   }
 
   function startListening(){
@@ -449,8 +523,8 @@
   function stopListeningAndSend(){ if(window.Voice) Voice.stopListening(); }
 
   // ---------- Text input ----------
-  if(els.sendBtn) els.sendBtn.addEventListener('click', submitTextInput);
-  if(els.cmdInput) els.cmdInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') submitTextInput(); });
+  if(els.sendBtn) els.sendBtn.addEventListener('click', (e)=>{ markGesture(); submitTextInput(); });
+  if(els.cmdInput) els.cmdInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ markGesture(); submitTextInput(); } });
   function submitTextInput(){
     const text = els.cmdInput ? els.cmdInput.value.trim() : '';
     if(!text) return;
@@ -478,9 +552,17 @@
       setState('speaking');
       addBubble('jarvis', reply);
       if(local.url){
-        const opened = openExternalUrl(local.url);
+        showActionPanel(local);
+        const canAutoOpen = Date.now() - lastGestureTs < 1300;
+        let opened = false;
+        if(canAutoOpen){
+          opened = openExternalUrl(local.url, local);
+        }
         addActionBubble((opened ? 'Abrir novamente: ' : '') + (local.label || 'Abrir link'), local.url);
-        log((opened ? 'Link externo aberto: ' : 'Link externo preparado: ') + (local.label || local.url), 'AÇÃO');
+        log((opened ? 'Link externo aberto: ' : 'Link externo preparado para toque: ') + (local.label || local.url), 'AÇÃO');
+        if(!opened && local.type && String(local.type).includes('whatsapp')){
+          showMicHelp('Mensagem pronta. Toque no botão “Abrir mensagem no WhatsApp”.', 6500);
+        }
       }
       if(local.type && String(local.type).includes('whatsapp')) setStatusMessage('WhatsApp preparado. Revise e aperte enviar.');
       else setStatusMessage('Ação local executada com sucesso.');

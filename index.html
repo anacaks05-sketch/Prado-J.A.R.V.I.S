@@ -324,6 +324,10 @@
       </button>
       <p class="core-status" id="core-status">SISTEMA ATIVO</p>
       <div id="mic-help" class="mic-help hidden">Clique no microfone e permita o acesso no navegador.</div>
+      <div id="action-panel" class="action-panel hidden">
+        <button id="action-open-btn" class="action-open-btn" type="button">Abrir ação</button>
+        <button id="action-hide-btn" class="action-hide-btn" type="button" aria-label="Fechar">×</button>
+      </div>
 
       <div class="status-box" id="status-box">
         <p id="status-box-text">J.A.R.V.I.S. online. Voz ElevenLabs pronta quando a chave estiver configurada. Núcleo aguardando comando.</p>
@@ -419,5 +423,6 @@
 })();
 </script>
 
+<audio id="jarvis-audio-player" playsinline preload="auto" style="display:none"></audio>
 </body>
 </html>
