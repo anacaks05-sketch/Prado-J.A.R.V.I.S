@@ -68,6 +68,31 @@
     els.transcript.scrollTop = els.transcript.scrollHeight;
   }
 
+  function addActionBubble(label, url){
+    const hint = els.transcript.querySelector('.transcript-hint');
+    if(hint) hint.remove();
+    const b = document.createElement('div');
+    b.className = 'bubble system action-bubble';
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = label || 'Abrir';
+    b.appendChild(a);
+    els.transcript.appendChild(b);
+    els.transcript.scrollTop = els.transcript.scrollHeight;
+  }
+
+  function openExternalUrl(url){
+    try{
+      const opened = window.open(url, '_blank', 'noopener,noreferrer');
+      return !!opened;
+    }catch(e){
+      console.warn('Abertura externa bloqueada:', e);
+      return false;
+    }
+  }
+
   function clearTranscript(){
     els.transcript.innerHTML = '<p class="transcript-hint">Toque no microfone ou digite abaixo para começar.</p>';
   }
@@ -216,6 +241,19 @@
       setState('idle');
       return;
     }
+    if(local && typeof local === 'object'){
+      const reply = local.speak || 'Comando preparado.';
+      setState('speaking');
+      addBubble('jarvis', reply);
+      if(local.url){
+        const opened = openExternalUrl(local.url);
+        addActionBubble((opened ? 'Abrir novamente: ' : '') + (local.label || 'Abrir link'), local.url);
+        log((opened ? 'Link externo aberto: ' : 'Link externo preparado: ') + (local.label || local.url), 'AÇÃO');
+      }
+      Voice.speak(reply, { onBoundaryAmplitude: pushAmplitude, onEnd: ()=> setState('idle') });
+      return;
+    }
+
     if(local){
       setState('speaking');
       addBubble('jarvis', local);

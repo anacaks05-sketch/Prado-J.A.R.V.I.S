@@ -67,7 +67,7 @@
           <div class="loader-track"><div class="loader-fill" id="loader-core"></div></div>
         </div>
         <div class="loader-row">
-          <span class="loader-label">VOZ</span>
+          <span class="loader-label">VOZ ELEVENLABS</span>
           <div class="loader-track"><div class="loader-fill" id="loader-voice"></div></div>
         </div>
         <div class="loader-row">
@@ -87,34 +87,76 @@
     <section class="core-stage">
       <div class="figure-stage" id="figure-stage">
         <div class="figure-glow"></div>
-        <svg class="figure-svg" viewBox="0 0 200 400" id="figure-svg">
+        <svg class="figure-svg" viewBox="0 0 240 430" id="figure-svg" aria-hidden="true">
           <defs>
-            <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2.2" result="blur"/>
+            <filter id="glow-filter" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="2.7" result="blur"/>
               <feMerge>
                 <feMergeNode in="blur"/>
                 <feMergeNode in="SourceGraphic"/>
               </feMerge>
             </filter>
+            <linearGradient id="holoStroke" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#d9fbff"/>
+              <stop offset="0.42" stop-color="#00d9ff"/>
+              <stop offset="1" stop-color="#0a4a5c"/>
+            </linearGradient>
+            <radialGradient id="holoFill" cx="50%" cy="38%" r="62%">
+              <stop offset="0" stop-color="#7fecff" stop-opacity="0.26"/>
+              <stop offset="0.45" stop-color="#00d9ff" stop-opacity="0.09"/>
+              <stop offset="1" stop-color="#00131a" stop-opacity="0"/>
+            </radialGradient>
           </defs>
-          <g class="figure-lines" filter="url(#glow-filter)">
-            <ellipse cx="100" cy="42" rx="21" ry="25"/>
-            <line x1="100" y1="67" x2="100" y2="82"/>
-            <path d="M60,82 L140,82 L150,175 L120,205 L80,205 L50,175 Z"/>
-            <path d="M80,205 L120,205 L112,238 L88,238 Z"/>
-            <path d="M60,82 L38,150 L30,215"/>
-            <circle cx="38" cy="150" r="4"/>
-            <circle cx="30" cy="215" r="4"/>
-            <path d="M140,82 L162,150 L170,215"/>
-            <circle cx="162" cy="150" r="4"/>
-            <circle cx="170" cy="215" r="4"/>
-            <path d="M88,238 L82,320 L78,388"/>
-            <circle cx="82" cy="320" r="4"/>
-            <path d="M112,238 L118,320 L122,388"/>
-            <circle cx="118" cy="320" r="4"/>
-            <line x1="60" y1="110" x2="140" y2="110" opacity="0.35"/>
-            <line x1="65" y1="140" x2="135" y2="140" opacity="0.35"/>
-            <line x1="70" y1="170" x2="130" y2="170" opacity="0.35"/>
+
+          <g class="holo-rings" filter="url(#glow-filter)">
+            <ellipse cx="120" cy="386" rx="74" ry="16"/>
+            <ellipse cx="120" cy="389" rx="42" ry="8"/>
+            <path d="M42 368 C70 350 170 350 198 368"/>
+          </g>
+
+          <g class="figure-aura">
+            <path d="M120 17 C168 18 203 72 205 156 C207 255 175 354 120 399 C65 354 33 255 35 156 C37 72 72 18 120 17 Z"/>
+          </g>
+
+          <g class="figure-shell" filter="url(#glow-filter)">
+            <path class="helmet" d="M91 52 C93 31 106 21 120 21 C134 21 147 31 149 52 L146 78 C140 91 131 98 120 98 C109 98 100 91 94 78 Z"/>
+            <path class="visor" d="M100 55 C112 48 128 48 140 55 L136 66 C125 62 115 62 104 66 Z"/>
+            <path class="neck" d="M104 96 L136 96 L143 119 L97 119 Z"/>
+            <path class="torso" d="M74 121 L166 121 L186 207 L158 262 L82 262 L54 207 Z"/>
+            <path class="core-halo" d="M101 153 C113 142 127 142 139 153 C150 165 150 183 139 195 C127 207 113 207 101 195 C90 183 90 165 101 153 Z"/>
+            <path class="pelvis" d="M85 266 L155 266 L143 305 L97 305 Z"/>
+            <path class="arm left" d="M70 132 L45 184 L39 250 L54 253 L64 197 L90 148 Z"/>
+            <path class="arm right" d="M170 132 L195 184 L201 250 L186 253 L176 197 L150 148 Z"/>
+            <path class="leg left" d="M98 306 L84 377 L100 395 L116 309 Z"/>
+            <path class="leg right" d="M142 306 L156 377 L140 395 L124 309 Z"/>
+          </g>
+
+          <g class="figure-panels" filter="url(#glow-filter)">
+            <path d="M82 135 L110 121 L120 152 L91 172 Z"/>
+            <path d="M158 135 L130 121 L120 152 L149 172 Z"/>
+            <path d="M76 197 L105 211 L91 250"/>
+            <path d="M164 197 L135 211 L149 250"/>
+            <path d="M96 282 L115 286"/>
+            <path d="M144 282 L125 286"/>
+            <path d="M90 334 L108 345"/>
+            <path d="M150 334 L132 345"/>
+          </g>
+
+          <g class="figure-mesh">
+            <line x1="54" y1="207" x2="186" y2="207"/>
+            <line x1="68" y1="154" x2="172" y2="154"/>
+            <line x1="79" y1="234" x2="161" y2="234"/>
+            <line x1="120" y1="22" x2="120" y2="398"/>
+            <path d="M54 207 C82 192 158 192 186 207"/>
+            <path d="M74 121 C98 137 142 137 166 121"/>
+            <path d="M84 377 C102 365 138 365 156 377"/>
+          </g>
+
+          <g class="data-streams">
+            <path d="M30 98 H74"/>
+            <path d="M166 98 H210"/>
+            <path d="M24 284 H72"/>
+            <path d="M168 284 H216"/>
           </g>
         </svg>
         <div class="figure-scanline"></div>
@@ -132,7 +174,7 @@
       <p class="core-status" id="core-status">SISTEMA ATIVO</p>
 
       <div class="status-box" id="status-box">
-        <p id="status-box-text">J.A.R.V.I.S. online. Todos os sistemas carregados e prontos para uso.</p>
+        <p id="status-box-text">J.A.R.V.I.S. online. Voz ElevenLabs pronta quando a chave estiver configurada. Núcleo aguardando comando.</p>
       </div>
 
       <div class="transcript" id="transcript" aria-live="polite">

@@ -1,82 +1,68 @@
-# J.A.R.V.I.S. — PWA de assistente pessoal com voz
+# J.A.R.V.I.S. — PWA de assistente pessoal com voz premium
 
-HUD futurista estilo Homem de Ferro: núcleo animado (canvas), reconhecimento
-de voz e síntese em pt-BR, chat com IA (Claude) via proxy serverless, comandos
-locais rápidos (hora, data, cálculo, lembretes) e app instalável (PWA).
+HUD futurista estilo Homem de Ferro com núcleo animado, figura holográfica premium, reconhecimento de voz em pt-BR, resposta por voz ElevenLabs com análise real do áudio reproduzido, chat com IA via proxy serverless, comandos locais rápidos, abertura de rascunho no Gmail e app instalável como PWA.
+
+## O que entrou nesta versão
+
+- **Voz ElevenLabs** via proxy seguro `/api/elevenlabs-tts.js`.
+- **Análise de áudio real na fala do Jarvis**: o áudio MP3 gerado pela ElevenLabs é reproduzido no navegador e passa por `AudioContext + AnalyserNode`, então o núcleo, barras e telemetria reagem à voz de verdade. Se a ElevenLabs não estiver configurada, cai automaticamente para a voz nativa do navegador.
+- **Gmail**: comandos como “abrir Gmail” ou “enviar email para exemplo@email.com assunto teste mensagem olá” abrem um rascunho no Gmail para revisar e enviar.
+- **Figura holográfica refeita do zero**: armadura/holograma com capacete, torso, painéis, aura, linhas de dados e base holográfica; saiu do modelo “bonequinho de palito”.
+- **Cache PWA atualizado** para forçar o celular a pegar a nova versão.
 
 ## Estrutura
 
 ```
 jarvis/
-├── index.html          # HUD principal
-├── manifest.json        # PWA manifest
-├── sw.js                 # Service worker (cache offline do app shell)
-├── css/style.css         # Tema visual (cyan/HUD)
+├── index.html
+├── manifest.json
+├── sw.js
+├── css/
+│   └── style.css
 ├── js/
-│   ├── reactor.js        # Núcleo de energia no peito da figura (canvas) — idle/listening/thinking/speaking
-│   ├── globe.js            # Globo wireframe rotativo (painel esquerdo)
-│   ├── radar.js             # Radar de rastreamento com varredura (painel direito)
-│   ├── voice.js           # SpeechRecognition + SpeechSynthesis (pt-BR)
-│   ├── commands.js        # Comandos locais (hora, data, cálculo, lembretes)
-│   ├── chat.js             # Fala com /api/chat
-│   └── app.js               # Orquestra tudo
+│   ├── reactor.js
+│   ├── globe.js
+│   ├── radar.js
+│   ├── voice.js
+│   ├── commands.js
+│   ├── chat.js
+│   └── app.js
 ├── api/
-│   └── chat.js              # Função serverless (Vercel) — proxy seguro pra Anthropic API
-└── icons/                    # Ícones do PWA
+│   ├── chat.js
+│   └── elevenlabs-tts.js
+└── icons/
+    ├── icon-192.png
+    └── icon-512.png
 ```
 
-## Deploy na Vercel (recomendado, igual seus outros projetos)
+## Deploy na Vercel
 
-1. Suba a pasta pra um repositório no GitHub.
-2. Importe o repo na Vercel.
+1. Suba a pasta `jarvis` para o GitHub.
+2. Importe o repositório na Vercel.
 3. Em **Settings → Environment Variables**, adicione:
-   - `ANTHROPIC_API_KEY` = sua chave da API da Anthropic
-4. Deploy. A Vercel detecta `api/chat.js` automaticamente como Serverless Function.
-5. Acesse pelo celular e use "Adicionar à tela de início" pra instalar como app.
+   - `ANTHROPIC_API_KEY` = sua chave da Anthropic.
+   - `ELEVENLABS_API_KEY` = sua chave da ElevenLabs.
+   - `ELEVENLABS_VOICE_ID` = ID da voz escolhida na ElevenLabs. Opcional, mas recomendado.
+   - `ELEVENLABS_MODEL_ID` = opcional. Padrão: `eleven_multilingual_v2`.
+4. Faça o redeploy.
+5. Abra no celular e instale pela tela de início.
 
-Não precisa de nenhuma outra configuração — o front-end já chama `/api/chat`
-relativo ao próprio domínio, então funciona direto após o deploy.
+## Comandos locais
 
-## Rodando local
+- “Que horas são?”
+- “Que dia é hoje?”
+- “Calcule 45 * 12”
+- “Lembre-me de ligar pro cliente amanhã”
+- “Meus lembretes”
+- “Limpar lembretes”
+- “Limpar histórico”
+- “Abrir Gmail”
+- “Enviar email para cliente@email.com assunto Reunião mensagem Confirmo nossa reunião amanhã.”
 
-Como usa `fetch('/api/chat')`, você precisa de um servidor que rode a função
-serverless. Duas opções fáceis:
+Qualquer frase fora dos comandos locais vai para a IA em `/api/chat`.
 
-```bash
-npm i -g vercel
-vercel dev
-```
+## Observações importantes
 
-Isso sobe o front-end e a função `/api/chat` juntos em `localhost:3000`,
-lendo `ANTHROPIC_API_KEY` de um arquivo `.env` local (`.env.local`).
-
-## Comandos de voz/texto já reconhecidos localmente (sem gastar tokens de IA)
-
-- "Que horas são?"
-- "Que dia é hoje?"
-- "Calcule 45 * 12" / "quanto é 200 / 5"
-- "Lembre-me de ligar pro cliente amanhã" → salva lembrete (localStorage)
-- "Meus lembretes" → lista os pendentes
-- "Limpar lembretes"
-- "Limpar histórico" → limpa a conversa na tela e o contexto da IA
-
-Qualquer outra frase é enviada para a IA (via `/api/chat`), que responde em
-texto curto pensado pra ser falado em voz alta.
-
-## Customizações fáceis
-
-- **Tom da IA / personalidade**: edite `SYSTEM_PROMPT` em `api/chat.js`.
-- **Voz**: `js/voice.js` tenta escolher uma voz pt-BR masculina automaticamente
-  (varia por navegador/SO — no Chrome Android costuma ter mais opções que no
-  Safari iOS).
-- **Cores do HUD**: variáveis CSS no topo de `css/style.css` (`--cyan`, `--amber`, etc).
-- **Ícones**: substitua os PNGs em `icons/` pelos seus, mantendo os tamanhos
-  192x192 e 512x512.
-
-## Próximos passos sugeridos
-
-- Integração com o bot do Telegram "Prado Sinais" pra centralizar comandos.
-- Web search real (a API da Anthropic suporta a tool de busca web — dá pra
-  ligar isso em `api/chat.js` se quiser respostas com dados atualizados).
-- Wake word ("Ei, Jarvis") usando um modelo leve tipo Porcupine, já que
-  SpeechRecognition do navegador não escuta em background contínuo.
+- A chave da ElevenLabs fica só no servidor da Vercel, nunca no JavaScript do app.
+- O app não envia e-mail sozinho; ele abre o rascunho no Gmail para você revisar e tocar em enviar. Isso evita precisar de OAuth completo ou senha do Gmail dentro do app.
+- No iPhone, depois do deploy, feche o app instalado e abra de novo para o novo service worker atualizar o cache.
