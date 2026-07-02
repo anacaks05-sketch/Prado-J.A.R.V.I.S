@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jarvis-cache-v3';
+const CACHE_NAME = 'jarvis-v4-1-boot-fix';
 const APP_SHELL = [
   './',
   './index.html',

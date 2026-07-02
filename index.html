@@ -392,5 +392,31 @@
 <script src="js/commands.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/app.js"></script>
+
+<script>
+/* Fallback anti-travamento: se algum recurso demorar, o Jarvis sai do boot mesmo assim */
+(function(){
+  function releaseJarvisBoot(){
+    var boot = document.getElementById('boot-screen');
+    var app = document.getElementById('app');
+    if(app) app.classList.remove('hidden');
+    if(boot) boot.classList.add('hidden');
+    try { window.dispatchEvent(new Event('resize')); } catch(e) {}
+  }
+
+  window.releaseJarvisBoot = releaseJarvisBoot;
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(releaseJarvisBoot, 3200);
+  });
+
+  window.addEventListener('load', function(){
+    setTimeout(releaseJarvisBoot, 2600);
+  });
+
+  setTimeout(releaseJarvisBoot, 5200);
+})();
+</script>
+
 </body>
 </html>

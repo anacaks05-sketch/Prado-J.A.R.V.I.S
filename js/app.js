@@ -504,8 +504,11 @@
   });
 
   // ---------- Boot sequence ----------
-  window.addEventListener('load', ()=>{
-    setTimeout(()=>{
+  let bootReleased = false;
+  function releaseBootSafe(){
+    if(bootReleased) return;
+    bootReleased = true;
+    try{
       if(els.boot) els.boot.classList.add('hidden');
       if(els.app) els.app.classList.remove('hidden');
       requestAnimationFrame(()=>{
@@ -517,8 +520,21 @@
       setStatusMessage('J.A.R.V.I.S. online. Núcleo aguardando comando.');
       log('J.A.R.V.I.S. inicializado.', 'SISTEMA');
       updateSystemList();
-    }, 2200);
-  });
+    }catch(e){
+      console.error('Falha ao liberar boot:', e);
+      if(window.releaseJarvisBoot) window.releaseJarvisBoot();
+    }
+  }
+
+  if(document.readyState === 'complete' || document.readyState === 'interactive'){
+    setTimeout(releaseBootSafe, 2200);
+  } else {
+    document.addEventListener('DOMContentLoaded', ()=> setTimeout(releaseBootSafe, 2200));
+    window.addEventListener('load', ()=> setTimeout(releaseBootSafe, 2200));
+  }
+
+  // trava de segurança: nunca deixar parado na tela de inicialização
+  setTimeout(releaseBootSafe, 5200);
 
   // ---------- PWA service worker ----------
   if('serviceWorker' in navigator){
