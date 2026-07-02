@@ -1,4 +1,20 @@
 
+## V4.8 Mobile final
+
+- adicionados badges pequenos de PLANETA e LOCALIZAÇÃO no celular
+- localização configurada como Balsas - MA
+- mantido o centro limpo: robô + anéis + núcleo
+- laterais continuam visíveis no celular
+
+
+## V4.7 Mobile modelo aprovado
+
+- no celular o layout fica no modelo aprovado, com os dois painéis HUD laterais visíveis
+- no quadro central fica só o robô com os anéis e o núcleo/bola pulsando
+- descrição perto do robô removida
+- onda/descrição central escondidas para deixar mais limpo
+
+
 ## V4.6 Mobile Real — Correção de celular
 
 Esta versão corrige os principais pontos do celular:
