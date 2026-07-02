@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jarvis-v4-8-mobile-final';
+const CACHE_NAME = 'jarvis-v4-9-stt-fix';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

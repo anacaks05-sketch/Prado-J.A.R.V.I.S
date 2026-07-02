@@ -1,4 +1,16 @@
 
+## V4.9 — Correção do aviso de microfone
+
+Esta versão não mostra mais o erro bruto em JSON quando a chave ElevenLabs está sem permissão.
+
+Para o microfone no celular funcionar com gravação real, a variável `ELEVENLABS_API_KEY` precisa ter estes acessos na ElevenLabs:
+
+- Text to Speech
+- Speech to Text / Fala para Texto
+
+Se a chave antiga foi criada somente com Text to Speech, crie uma nova chave ou edite a atual e libere Speech to Text. Depois salve na Vercel e faça Redeploy.
+
+
 ## V4.8 Mobile final
 
 - adicionados badges pequenos de PLANETA e LOCALIZAÇÃO no celular
