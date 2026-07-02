@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <title>J.A.R.V.I.S.</title>
 <meta name="description" content="Assistente pessoal com voz, HUD futurista e IA">
-<meta name="theme-color" content="#04070c">
+<meta name="theme-color" content="#03060b">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,12 +29,9 @@
 </div>
 
 <div id="app" class="hidden">
-
-  <!-- Grid / scan overlay -->
   <div class="hud-grid"></div>
   <div class="hud-vignette"></div>
 
-  <!-- TOP BAR -->
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">◈</span>
@@ -47,78 +44,157 @@
     <div class="clock" id="clock">00:00:00</div>
   </header>
 
-  <!-- MAIN LAYOUT -->
   <main class="layout">
 
-    <!-- LEFT: TELEMETRY -->
+    <!-- LEFT DECK -->
     <aside class="panel panel-left" id="panel-left">
-      <h2 class="panel-title">TELEMETRIA</h2>
 
-      <div class="telemetry-block">
-        <span class="tele-label">DATA</span>
-        <span class="tele-value" id="tele-date">--/--/----</span>
-      </div>
-      <div class="telemetry-block">
-        <span class="tele-label">CONEXÃO</span>
-        <span class="tele-value" id="tele-net">VERIFICANDO</span>
-      </div>
-      <div class="telemetry-block">
-        <span class="tele-label">BATERIA</span>
-        <span class="tele-value" id="tele-battery">--%</span>
-      </div>
-      <div class="telemetry-block">
-        <span class="tele-label">MICROFONE</span>
-        <span class="tele-value" id="tele-mic">INATIVO</span>
-      </div>
-      <div class="telemetry-block">
-        <span class="tele-label">LATÊNCIA IA</span>
-        <span class="tele-value" id="tele-latency">-- ms</span>
+      <div class="card">
+        <canvas id="globe-canvas" width="260" height="200"></canvas>
+        <div class="card-row">
+          <span class="card-label">SISTEMA</span>
+          <span class="card-value" id="globe-code">TERRA · BR</span>
+        </div>
+        <div class="badge" id="net-badge">
+          <span class="badge-dot"></span> <span id="net-badge-text">CONECTANDO</span>
+        </div>
       </div>
 
-      <div class="wave-monitor">
-        <span class="tele-label">ONDA DE ÁUDIO</span>
-        <canvas id="wave-canvas" width="260" height="60"></canvas>
+      <div class="card">
+        <span class="panel-title">MÓDULOS</span>
+        <div class="loader-row">
+          <span class="loader-label">NÚCLEO IA</span>
+          <div class="loader-track"><div class="loader-fill" id="loader-core"></div></div>
+        </div>
+        <div class="loader-row">
+          <span class="loader-label">VOZ</span>
+          <div class="loader-track"><div class="loader-fill" id="loader-voice"></div></div>
+        </div>
+        <div class="loader-row">
+          <span class="loader-label">MEMÓRIA</span>
+          <div class="loader-track"><div class="loader-fill" id="loader-memory"></div></div>
+        </div>
       </div>
+
+      <div class="card">
+        <span class="panel-title">ONDA DE ÁUDIO</span>
+        <canvas id="bars-canvas" width="260" height="70"></canvas>
+      </div>
+
     </aside>
 
-    <!-- CENTER: CORE -->
+    <!-- CENTER: HOLO FIGURE -->
     <section class="core-stage">
-      <div class="core-wrap">
-        <canvas id="reactor-canvas" width="480" height="480"></canvas>
-        <div class="core-label" id="core-label">JARVIS</div>
+      <div class="figure-stage" id="figure-stage">
+        <div class="figure-glow"></div>
+        <svg class="figure-svg" viewBox="0 0 200 400" id="figure-svg">
+          <defs>
+            <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.2" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          <g class="figure-lines" filter="url(#glow-filter)">
+            <ellipse cx="100" cy="42" rx="21" ry="25"/>
+            <line x1="100" y1="67" x2="100" y2="82"/>
+            <path d="M60,82 L140,82 L150,175 L120,205 L80,205 L50,175 Z"/>
+            <path d="M80,205 L120,205 L112,238 L88,238 Z"/>
+            <path d="M60,82 L38,150 L30,215"/>
+            <circle cx="38" cy="150" r="4"/>
+            <circle cx="30" cy="215" r="4"/>
+            <path d="M140,82 L162,150 L170,215"/>
+            <circle cx="162" cy="150" r="4"/>
+            <circle cx="170" cy="215" r="4"/>
+            <path d="M88,238 L82,320 L78,388"/>
+            <circle cx="82" cy="320" r="4"/>
+            <path d="M112,238 L118,320 L122,388"/>
+            <circle cx="118" cy="320" r="4"/>
+            <line x1="60" y1="110" x2="140" y2="110" opacity="0.35"/>
+            <line x1="65" y1="140" x2="135" y2="140" opacity="0.35"/>
+            <line x1="70" y1="170" x2="130" y2="170" opacity="0.35"/>
+          </g>
+        </svg>
+        <div class="figure-scanline"></div>
+        <canvas id="core-canvas" width="140" height="140"></canvas>
       </div>
+
+      <h1 class="core-title">JARVIS</h1>
+      <button id="mic-btn" class="mic-btn" aria-label="Ativar microfone">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path fill="currentColor" d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3z"/>
+          <path fill="currentColor" d="M19 11a1 1 0 10-2 0 5 5 0 01-10 0 1 1 0 10-2 0 7 7 0 006 6.93V20H9a1 1 0 100 2h6a1 1 0 100-2h-2v-2.07A7 7 0 0019 11z"/>
+        </svg>
+        <span class="mic-pulse"></span>
+      </button>
+      <p class="core-status" id="core-status">SISTEMA ATIVO</p>
+
+      <div class="status-box" id="status-box">
+        <p id="status-box-text">J.A.R.V.I.S. online. Todos os sistemas carregados e prontos para uso.</p>
+      </div>
+
       <div class="transcript" id="transcript" aria-live="polite">
-        <p class="transcript-hint">Toque no núcleo ou digite abaixo para começar.</p>
+        <p class="transcript-hint">Toque no microfone ou digite abaixo para começar.</p>
       </div>
     </section>
 
-    <!-- RIGHT: LOG -->
+    <!-- RIGHT DECK -->
     <aside class="panel panel-right" id="panel-right">
-      <h2 class="panel-title">REGISTRO</h2>
-      <div class="log-list" id="log-list"></div>
+
+      <div class="card">
+        <canvas id="radar-canvas" width="220" height="200"></canvas>
+        <div class="card-row center">
+          <span class="card-value" id="radar-status">RASTREAMENTO<br>ONLINE</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="panel-title">REGISTRO</span>
+        <div class="log-list" id="log-list"></div>
+      </div>
+
+      <div class="card">
+        <span class="panel-title">TELEMETRIA</span>
+        <div class="gauges">
+          <div class="gauge" data-gauge="audio">
+            <svg viewBox="0 0 60 60"><circle class="gauge-bg" cx="30" cy="30" r="26"/><circle class="gauge-fg" cx="30" cy="30" r="26"/></svg>
+            <span class="gauge-value">0</span><span class="gauge-label">ÁUDIO</span>
+          </div>
+          <div class="gauge" data-gauge="net">
+            <svg viewBox="0 0 60 60"><circle class="gauge-bg" cx="30" cy="30" r="26"/><circle class="gauge-fg" cx="30" cy="30" r="26"/></svg>
+            <span class="gauge-value">0</span><span class="gauge-label">REDE</span>
+          </div>
+          <div class="gauge" data-gauge="battery">
+            <svg viewBox="0 0 60 60"><circle class="gauge-bg" cx="30" cy="30" r="26"/><circle class="gauge-fg" cx="30" cy="30" r="26"/></svg>
+            <span class="gauge-value">0</span><span class="gauge-label">BATERIA</span>
+          </div>
+          <div class="gauge" data-gauge="system">
+            <svg viewBox="0 0 60 60"><circle class="gauge-bg" cx="30" cy="30" r="26"/><circle class="gauge-fg" cx="30" cy="30" r="26"/></svg>
+            <span class="gauge-value">0</span><span class="gauge-label">SISTEMA</span>
+          </div>
+        </div>
+      </div>
+
     </aside>
 
   </main>
 
-  <!-- COMMAND BAR -->
   <footer class="cmdbar">
-    <button id="mic-btn" class="mic-btn" aria-label="Ativar microfone">
-      <svg viewBox="0 0 24 24" width="26" height="26">
-        <path fill="currentColor" d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3z"/>
-        <path fill="currentColor" d="M19 11a1 1 0 10-2 0 5 5 0 01-10 0 1 1 0 10-2 0 7 7 0 006 6.93V20H9a1 1 0 100 2h6a1 1 0 100-2h-2v-2.07A7 7 0 0019 11z"/>
-      </svg>
-      <span class="mic-pulse"></span>
-    </button>
     <input type="text" id="cmd-input" class="cmd-input" placeholder="Fale ou digite um comando..." autocomplete="off">
     <button id="send-btn" class="send-btn" aria-label="Enviar">
       <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg>
     </button>
   </footer>
 
-  <button id="panel-toggle" class="panel-toggle" aria-label="Alternar painéis">≡</button>
+  <button id="panel-toggle-left" class="panel-toggle panel-toggle-left" aria-label="Alternar painel esquerdo">☰</button>
+  <button id="panel-toggle-right" class="panel-toggle panel-toggle-right" aria-label="Alternar painel direito">☰</button>
 </div>
 
 <script src="js/reactor.js"></script>
+<script src="js/globe.js"></script>
+<script src="js/radar.js"></script>
 <script src="js/voice.js"></script>
 <script src="js/commands.js"></script>
 <script src="js/chat.js"></script>

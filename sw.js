@@ -1,9 +1,11 @@
-const CACHE_NAME = 'jarvis-cache-v1';
+const CACHE_NAME = 'jarvis-cache-v2';
 const APP_SHELL = [
   './',
   './index.html',
   './css/style.css',
   './js/reactor.js',
+  './js/globe.js',
+  './js/radar.js',
   './js/voice.js',
   './js/commands.js',
   './js/chat.js',

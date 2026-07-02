@@ -13,7 +13,9 @@ jarvis/
 ├── sw.js                 # Service worker (cache offline do app shell)
 ├── css/style.css         # Tema visual (cyan/HUD)
 ├── js/
-│   ├── reactor.js        # Núcleo animado (canvas) — idle/listening/thinking/speaking
+│   ├── reactor.js        # Núcleo de energia no peito da figura (canvas) — idle/listening/thinking/speaking
+│   ├── globe.js            # Globo wireframe rotativo (painel esquerdo)
+│   ├── radar.js             # Radar de rastreamento com varredura (painel direito)
 │   ├── voice.js           # SpeechRecognition + SpeechSynthesis (pt-BR)
 │   ├── commands.js        # Comandos locais (hora, data, cálculo, lembretes)
 │   ├── chat.js             # Fala com /api/chat

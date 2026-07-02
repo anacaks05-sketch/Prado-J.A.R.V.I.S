@@ -1,4 +1,4 @@
-/* app.js — cérebro da interface: liga voz, núcleo visual, chat e comandos */
+/* app.js — cérebro da interface: liga voz, deck visual, chat e comandos */
 (function(){
   const $ = (id)=>document.getElementById(id);
 
@@ -8,14 +8,12 @@
     statusDot: $('status-dot'),
     statusText: $('status-text'),
     clock: $('clock'),
-    teleDate: $('tele-date'),
-    teleNet: $('tele-net'),
-    teleBattery: $('tele-battery'),
-    teleMic: $('tele-mic'),
-    teleLatency: $('tele-latency'),
-    waveCanvas: $('wave-canvas'),
-    coreWrap: document.querySelector('.core-wrap'),
-    coreLabel: $('core-label'),
+    globeCode: $('globe-code'),
+    netBadge: $('net-badge'),
+    netBadgeText: $('net-badge-text'),
+    barsCanvas: $('bars-canvas'),
+    coreStatus: $('core-status'),
+    statusBoxText: $('status-box-text'),
     transcript: $('transcript'),
     logList: $('log-list'),
     micBtn: $('mic-btn'),
@@ -23,28 +21,33 @@
     sendBtn: $('send-btn'),
     panelLeft: $('panel-left'),
     panelRight: $('panel-right'),
-    panelToggle: $('panel-toggle'),
+    toggleLeft: $('panel-toggle-left'),
+    toggleRight: $('panel-toggle-right'),
+    radarStatus: $('radar-status'),
   };
 
   let jarvisState = 'idle'; // idle | listening | thinking | speaking
-  const waveCtx = els.waveCanvas.getContext('2d');
-  let waveHistory = new Array(64).fill(0);
+  const barsCtx = els.barsCanvas.getContext('2d');
+  let waveHistory = new Array(28).fill(0.08);
 
   function setState(s){
     jarvisState = s;
-    Reactor.setState(s);
+    if(window.Reactor) Reactor.setState(s);
+    if(window.Radar) Radar.setState(s);
     els.statusDot.className = 'status-dot' + (s !== 'idle' ? ' ' + s : '');
     const labels = { idle:'EM ESPERA', listening:'OUVINDO', thinking:'PROCESSANDO', speaking:'RESPONDENDO' };
     els.statusText.textContent = labels[s] || s.toUpperCase();
-    els.coreLabel.textContent = s === 'idle' ? 'JARVIS' : labels[s];
+    els.coreStatus.textContent = s === 'idle' ? 'SISTEMA ATIVO' : labels[s];
     els.micBtn.classList.toggle('active', s === 'listening');
+    els.radarStatus.innerHTML = s === 'idle' ? 'RASTREAMENTO<br>ONLINE' : labels[s] + '<br>EM CURSO';
   }
 
-  function log(text){
+  function log(text, tag){
     const time = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     const entry = document.createElement('div');
     entry.className = 'log-entry';
-    entry.innerHTML = `<span class="log-time">${time}</span>${escapeHtml(text)}`;
+    const tagHtml = tag ? `<span class="log-tag">[${tag}]</span>` : '';
+    entry.innerHTML = `<span class="log-time">${time}</span>${tagHtml}${escapeHtml(text)}`;
     els.logList.prepend(entry);
     while(els.logList.children.length > 40){ els.logList.removeChild(els.logList.lastChild); }
   }
@@ -66,88 +69,118 @@
   }
 
   function clearTranscript(){
-    els.transcript.innerHTML = '<p class="transcript-hint">Toque no núcleo ou digite abaixo para começar.</p>';
+    els.transcript.innerHTML = '<p class="transcript-hint">Toque no microfone ou digite abaixo para começar.</p>';
   }
 
-  // ---------- Clock / telemetry ----------
-  function tickClock(){
-    const now = new Date();
-    els.clock.textContent = now.toLocaleTimeString('pt-BR');
-  }
+  // ---------- Clock ----------
+  function tickClock(){ els.clock.textContent = new Date().toLocaleTimeString('pt-BR'); }
   setInterval(tickClock, 1000); tickClock();
 
-  function updateDate(){
-    els.teleDate.textContent = new Date().toLocaleDateString('pt-BR');
-  }
-  updateDate();
-
+  // ---------- Net badge / globe code ----------
   function updateNet(){
     const online = navigator.onLine;
-    els.teleNet.textContent = online ? 'ONLINE' : 'OFFLINE';
-    els.teleNet.style.color = online ? 'var(--success)' : 'var(--danger)';
+    els.netBadge.classList.toggle('offline', !online);
+    els.netBadgeText.textContent = online ? 'CONEXÃO ATIVA' : 'OFFLINE';
   }
   window.addEventListener('online', updateNet);
   window.addEventListener('offline', updateNet);
   updateNet();
 
+  try{
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    const region = tz.split('/').pop()?.replace('_',' ') || 'LOCAL';
+    els.globeCode.textContent = 'TERRA · ' + region.toUpperCase();
+  }catch(e){ /* mantém padrão */ }
+
+  // ---------- Boot loaders ----------
+  function runLoaders(){
+    const rows = [
+      { id:'loader-core', pct: 100, delay: 200 },
+      { id:'loader-voice', pct: window.Voice && Voice.supported() ? 100 : 35, delay: 500 },
+      { id:'loader-memory', pct: 100, delay: 800 },
+    ];
+    rows.forEach(r=>{
+      setTimeout(()=>{
+        const el = $(r.id);
+        if(el) el.style.width = r.pct + '%';
+      }, r.delay);
+    });
+  }
+
+  // ---------- Gauges ----------
+  const CIRC = 163; // 2*PI*26 aprox
+  function setGauge(name, pct){
+    pct = Math.max(0, Math.min(100, Math.round(pct)));
+    const wrap = document.querySelector(`.gauge[data-gauge="${name}"]`);
+    if(!wrap) return;
+    const fg = wrap.querySelector('.gauge-fg');
+    const val = wrap.querySelector('.gauge-value');
+    fg.style.strokeDashoffset = CIRC - (CIRC * pct/100);
+    val.textContent = pct;
+  }
+
+  let batteryLevel = null;
   if('getBattery' in navigator){
     navigator.getBattery().then(bat=>{
-      const upd = ()=> els.teleBattery.textContent = Math.round(bat.level*100) + '%';
+      const upd = ()=>{ batteryLevel = Math.round(bat.level*100); setGauge('battery', batteryLevel); };
       upd();
       bat.addEventListener('levelchange', upd);
     });
   } else {
-    els.teleBattery.textContent = 'N/D';
+    setGauge('battery', 100);
   }
 
-  els.teleMic.textContent = Voice.supported() ? 'PRONTO' : 'INDISPONÍVEL';
+  let systemIntegrity = 92;
+  setInterval(()=>{
+    systemIntegrity += (Math.random()-0.5)*6;
+    systemIntegrity = Math.max(78, Math.min(99, systemIntegrity));
+    setGauge('system', systemIntegrity);
+  }, 2600);
+  setGauge('system', systemIntegrity);
+  setGauge('net', navigator.onLine ? 96 : 8);
+  window.addEventListener('online', ()=>setGauge('net', 96));
+  window.addEventListener('offline', ()=>setGauge('net', 8));
+  setGauge('audio', 4);
 
-  // ---------- Wave visualizer ----------
-  function drawWave(){
-    const w = els.waveCanvas.width, h = els.waveCanvas.height;
-    waveCtx.clearRect(0,0,w,h);
-    waveCtx.strokeStyle = jarvisState === 'listening' ? '#ff3b5c' : '#00d9ff';
-    waveCtx.lineWidth = 1.5;
-    waveCtx.beginPath();
-    const step = w / (waveHistory.length - 1);
+  // ---------- Audio bars visualizer ----------
+  function drawBars(){
+    const w = els.barsCanvas.width, h = els.barsCanvas.height;
+    barsCtx.clearRect(0,0,w,h);
+    const color = jarvisState === 'listening' ? '#ff3b5c' : jarvisState === 'speaking' ? '#00ff9d' : '#00d9ff';
+    const barW = w / waveHistory.length;
     waveHistory.forEach((v,i)=>{
-      const x = i*step;
-      const y = h/2 - v * (h/2 - 4);
-      if(i===0) waveCtx.moveTo(x,y); else waveCtx.lineTo(x,y);
+      const bh = Math.max(3, v * h * 0.9);
+      barsCtx.fillStyle = color;
+      barsCtx.globalAlpha = 0.35 + v*0.65;
+      barsCtx.fillRect(i*barW + barW*0.2, h - bh, barW*0.6, bh);
     });
-    waveCtx.stroke();
-    requestAnimationFrame(drawWave);
+    barsCtx.globalAlpha = 1;
+    requestAnimationFrame(drawBars);
   }
-  requestAnimationFrame(drawWave);
+  requestAnimationFrame(drawBars);
 
   function pushAmplitude(a){
     waveHistory.push(a); waveHistory.shift();
-    Reactor.setAmplitude(a);
+    if(window.Reactor) Reactor.setAmplitude(a);
+    setGauge('audio', a*100);
   }
 
-  // ---------- Core interactions ----------
-  els.coreWrap.addEventListener('click', ()=>{
-    if(jarvisState === 'idle') startListening();
-    else if(jarvisState === 'listening') stopListeningAndSend();
-  });
-
+  // ---------- Mic ----------
   els.micBtn.addEventListener('click', ()=>{
     if(jarvisState === 'idle') startListening();
     else if(jarvisState === 'listening') stopListeningAndSend();
   });
 
   function startListening(){
-    if(!Voice.supported()){
-      log('Reconhecimento de voz não suportado neste navegador.');
+    if(!window.Voice || !Voice.supported()){
+      log('Reconhecimento de voz não suportado neste navegador.', 'ERRO');
       addBubble('system', 'Este navegador não suporta reconhecimento de voz. Use o campo de texto abaixo.');
       return;
     }
     setState('listening');
-    log('Escutando...');
+    log('Escutando...', 'ÁUDIO');
     Voice.startListening({
-      onResult: ({interim, final})=>{
-        els.cmdInput.value = final || interim;
-      },
+      onResult: ({interim, final})=>{ els.cmdInput.value = final || interim; },
       onAmplitude: (a)=> pushAmplitude(a),
       onEnd: (finalText)=>{
         if(jarvisState === 'listening'){
@@ -155,23 +188,14 @@
           else setState('idle');
         }
       },
-      onError: (err)=>{
-        log('Erro de voz: ' + err);
-        setState('idle');
-      }
+      onError: (err)=>{ log('Erro de voz: ' + err, 'ERRO'); setState('idle'); }
     });
   }
-
-  function stopListeningAndSend(){
-    Voice.stopListening();
-  }
+  function stopListeningAndSend(){ Voice.stopListening(); }
 
   // ---------- Text input ----------
   els.sendBtn.addEventListener('click', submitTextInput);
-  els.cmdInput.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter') submitTextInput();
-  });
-
+  els.cmdInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') submitTextInput(); });
   function submitTextInput(){
     const text = els.cmdInput.value.trim();
     if(!text) return;
@@ -179,11 +203,11 @@
     handleUserInput(text);
   }
 
-  // ---------- Core pipeline ----------
+  // ---------- Pipeline ----------
   async function handleUserInput(text){
     if(!text || !text.trim()) { setState('idle'); return; }
     addBubble('user', text);
-    log('Comando: ' + text);
+    log('Comando: ' + text, 'DATA');
 
     const local = Commands.tryLocal(text);
     if(local === '__CLEAR_TRANSCRIPT__'){
@@ -195,42 +219,34 @@
     if(local){
       setState('speaking');
       addBubble('jarvis', local);
-      Voice.speak(local, {
-        onBoundaryAmplitude: pushAmplitude,
-        onEnd: ()=> setState('idle')
-      });
+      Voice.speak(local, { onBoundaryAmplitude: pushAmplitude, onEnd: ()=> setState('idle') });
       return;
     }
 
     setState('thinking');
+    log('Processando consulta...', 'IA');
     try{
       const { reply, latency } = await Chat.ask(text);
-      els.teleLatency.textContent = latency + ' ms';
       setState('speaking');
       addBubble('jarvis', reply);
-      log('Resposta gerada (' + latency + ' ms)');
-      Voice.speak(reply, {
-        onBoundaryAmplitude: pushAmplitude,
-        onEnd: ()=> setState('idle')
-      });
+      log('Resposta gerada (' + latency + ' ms)', 'IA');
+      Voice.speak(reply, { onBoundaryAmplitude: pushAmplitude, onEnd: ()=> setState('idle') });
     }catch(e){
       console.error(e);
       const msg = 'Falha ao contatar o núcleo de IA. Verifique se a API está configurada no servidor.';
       addBubble('system', msg);
-      log('Erro: ' + e.message);
+      log('Erro: ' + e.message, 'ERRO');
       setState('idle');
     }
   }
 
   // ---------- Panels (mobile) ----------
-  els.panelToggle.addEventListener('click', ()=>{
-    els.panelLeft.classList.toggle('open');
-  });
+  els.toggleLeft.addEventListener('click', ()=>{ els.panelLeft.classList.toggle('open'); els.panelRight.classList.remove('open'); });
+  els.toggleRight.addEventListener('click', ()=>{ els.panelRight.classList.toggle('open'); els.panelLeft.classList.remove('open'); });
   document.addEventListener('click', (e)=>{
-    if(window.innerWidth > 900) return;
-    if(!els.panelLeft.contains(e.target) && e.target !== els.panelToggle){
-      els.panelLeft.classList.remove('open');
-    }
+    if(window.innerWidth > 980) return;
+    if(!els.panelLeft.contains(e.target) && e.target !== els.toggleLeft){ els.panelLeft.classList.remove('open'); }
+    if(!els.panelRight.contains(e.target) && e.target !== els.toggleRight){ els.panelRight.classList.remove('open'); }
   });
 
   // ---------- Boot sequence ----------
@@ -238,8 +254,14 @@
     setTimeout(()=>{
       els.boot.classList.add('hidden');
       els.app.classList.remove('hidden');
+      // os canvases estavam com display:none durante o boot; força recalcular tamanho agora que estão visíveis
+      requestAnimationFrame(()=>{
+        window.dispatchEvent(new Event('resize'));
+        requestAnimationFrame(()=> window.dispatchEvent(new Event('resize')));
+      });
       setState('idle');
-      log('J.A.R.V.I.S. inicializado.');
+      runLoaders();
+      log('J.A.R.V.I.S. inicializado.', 'SISTEMA');
     }, 2200);
   });
 
