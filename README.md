@@ -71,3 +71,23 @@ Qualquer frase fora dos comandos locais vai para a IA em `/api/chat`.
 ## Holograma Premium V2
 
 Esta versão troca o boneco simples por um avatar holográfico mais premium, com silhueta humanoide, armadura translúcida, núcleo ARC, visor iluminado, linhas HUD e plataforma animada.
+
+
+## Versão Final Aprovada V3
+
+Esta versão usa o modelo visual aprovado do J.A.R.V.I.S. com holograma humanoide premium, núcleo no peito, HUD futurista e painel refinado.
+
+Mantido nesta versão:
+- Voz ElevenLabs via proxy seguro `/api/elevenlabs-tts.js`
+- Fallback para voz nativa do navegador se a chave não estiver configurada
+- Análise visual de áudio para reação do núcleo/interface
+- Comandos de Gmail abrindo rascunho pronto para revisar e enviar
+- PWA com manifest, service worker e ícones
+
+Variáveis necessárias na Vercel:
+
+```txt
+ANTHROPIC_API_KEY=sua_chave_da_ia
+ELEVENLABS_API_KEY=sua_chave_da_elevenlabs
+ELEVENLABS_VOICE_ID=id_da_voz_escolhida
+```
