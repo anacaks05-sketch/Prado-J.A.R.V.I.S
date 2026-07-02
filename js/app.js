@@ -445,8 +445,12 @@
         recordingMode = null;
         stopFakeAudio();
         setState('error');
-        setMessage('Falha ao transcrever o áudio.');
-        showHelp(String(err || 'Falha na gravação. Verifique permissão do microfone e Fala para Texto na ElevenLabs.'), 9000);
+        setMessage('Falha ao transcrever o áudio. Ative Speech to Text na chave ElevenLabs.');
+        const cleanErr = String(err || '');
+        const msg = cleanErr.includes('Speech to Text') || cleanErr.includes('Fala para Texto') || cleanErr.includes('speech_to_text')
+          ? 'Microfone do celular precisa da permissão Speech to Text na chave ElevenLabs. Ative Fala para Texto na ElevenLabs e faça Redeploy.'
+          : (cleanErr || 'Falha na gravação. Verifique permissão do microfone.');
+        showHelp(msg, 10000);
         setTimeout(()=>setState('idle'), 1500);
       }
     });

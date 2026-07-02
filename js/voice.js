@@ -231,7 +231,22 @@
     try{ data = JSON.parse(text); }catch(e){}
 
     if(!res.ok){
-      throw new Error(data.error || text || 'Falha na transcrição de áudio.');
+      if(data && data.code === 'ELEVENLABS_STT_PERMISSION'){
+        const err = new Error(data.error || 'Chave ElevenLabs sem permissão de Fala para Texto.');
+        err.code = 'ELEVENLABS_STT_PERMISSION';
+        throw err;
+      }
+
+      let clean = data.error || text || 'Falha na transcrição de áudio.';
+      try{
+        const parsed = JSON.parse(clean);
+        const detail = parsed.detail || parsed;
+        if(JSON.stringify(detail).includes('speech_to_text')){
+          clean = 'Sua chave ElevenLabs está sem permissão de Fala para Texto / Speech to Text.';
+        }
+      }catch(e){}
+
+      throw new Error(clean);
     }
 
     return String(data.text || '').trim();
