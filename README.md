@@ -1,4 +1,15 @@
 
+## V4.5 Estável Mobile
+
+Esta versão foi simplificada para funcionar melhor no celular:
+- botões reais e clicáveis acima das camadas visuais
+- microfone com erro claro quando o navegador bloquear
+- campo de texto sempre funcional
+- WhatsApp abre por botão de ação, evitando bloqueio do navegador
+- voz ElevenLabs tenta tocar após toque do usuário
+- service worker sem cache antigo travando versão anterior
+
+
 ## Atualização V4.4 — Mobile Pro
 
 - Layout ajustado para celular/PWA.

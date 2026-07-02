@@ -795,3 +795,120 @@ body[data-jarvis-state="speaking"] .voice-wave-canvas{
     height:70px !important;
   }
 }
+
+
+/* ---------- JARVIS V4.5 ESTÁVEL MOBILE ---------- */
+#boot-screen{ z-index:900; }
+.runtime-hud{ pointer-events:none !important; }
+.approved-ui-bg{ pointer-events:none !important; }
+.mic-btn, .send-btn, .cmd-input, .action-panel, .action-open-btn, .action-hide-btn{
+  pointer-events:auto !important;
+  touch-action:manipulation !important;
+}
+.mic-btn{
+  opacity:1 !important;
+  z-index:120 !important;
+  width:78px !important;
+  height:78px !important;
+  background:radial-gradient(circle, rgba(180,255,255,.42), rgba(0,217,255,.18) 55%, rgba(0,8,16,.78)) !important;
+  border:2px solid rgba(140,252,255,.92) !important;
+  box-shadow:0 0 24px rgba(0,217,255,.82), inset 0 0 18px rgba(0,217,255,.35) !important;
+  color:#ffffff !important;
+}
+.mic-btn svg{ width:34px !important; height:34px !important; }
+.action-panel{
+  z-index:130 !important;
+  pointer-events:auto !important;
+}
+.mic-help{
+  z-index:140 !important;
+  pointer-events:none !important;
+}
+.cmdbar{
+  z-index:150 !important;
+  pointer-events:auto !important;
+}
+.chest-orb{
+  animation:chest-pulse .95s ease-in-out infinite !important;
+}
+.orbital-ring{
+  opacity:.98 !important;
+}
+.ring-a{ animation-duration:4.5s !important; }
+.ring-b{ animation-duration:3.6s !important; }
+.ring-c{ animation-duration:5.4s !important; }
+
+@media (max-width: 780px){
+  .layout{ height:calc(100dvh - 84px) !important; }
+  .core-stage{ min-height:0 !important; }
+  .approved-ui-bg{
+    object-fit:cover !important;
+    object-position:center top !important;
+  }
+  .hud-column{ display:none !important; }
+  .robot-fx{
+    display:block !important;
+    width:82vw !important;
+    height:82vw !important;
+    top:35.5% !important;
+    z-index:5 !important;
+  }
+  .chest-orb{
+    width:50px !important;
+    height:50px !important;
+    top:39% !important;
+  }
+  .base-rings{
+    width:72% !important;
+    bottom:15% !important;
+  }
+  .voice-wave-canvas{
+    width:64vw !important;
+    height:46px !important;
+    top:72.6% !important;
+    z-index:8 !important;
+  }
+  .mic-btn{
+    top:75.5% !important;
+    width:76px !important;
+    height:76px !important;
+  }
+  .mic-help{
+    top:83.5% !important;
+    width:94vw !important;
+    font-size:12.5px !important;
+    padding:8px 10px !important;
+  }
+  .transcript{
+    bottom:88px !important;
+    max-height:82px !important;
+    width:95vw !important;
+    z-index:55 !important;
+  }
+  .action-panel{
+    bottom:126px !important;
+    left:12px !important;
+    right:12px !important;
+    transform:none !important;
+    width:auto !important;
+    border-radius:18px !important;
+  }
+  .action-open-btn{
+    min-height:52px !important;
+    font-size:12px !important;
+  }
+  .cmdbar{
+    height:84px !important;
+    padding:12px 10px calc(12px + env(safe-area-inset-bottom)) !important;
+  }
+  .cmd-input{
+    height:54px !important;
+    font-size:16px !important;
+    min-width:0 !important;
+  }
+  .send-btn{
+    width:54px !important;
+    height:54px !important;
+    flex:0 0 54px !important;
+  }
+}

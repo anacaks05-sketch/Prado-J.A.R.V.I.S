@@ -1,53 +1,23 @@
-const CACHE_NAME = 'jarvis-v4-4-mobile-pro';
-const APP_SHELL = [
-  './',
-  './index.html',
-  './css/style.css',
-  './js/reactor.js',
-  './js/globe.js',
-  './js/radar.js',
-  './js/voice.js',
-  './js/commands.js',
-  './js/chat.js',
-  './js/app.js',
-  './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
-];
+const CACHE_NAME = 'jarvis-v4-5-stable-mobile';
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
-  );
+self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null))).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // Nunca cachear chamadas de API — sempre precisam ser ao vivo.
-  if (url.pathname.startsWith('/api/')) {
-    return;
-  }
-
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  if(req.method !== 'GET') return;
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((response) => {
-        if (response.ok && event.request.method === 'GET') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => cached);
-    })
+    fetch(req).then(res => {
+      const copy = res.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put(req, copy)).catch(()=>{});
+      return res;
+    }).catch(() => caches.match(req))
   );
 });

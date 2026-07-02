@@ -162,7 +162,11 @@
     const looksLikeWhatsApp = /(whatsapp|zap|zapzap|zape)/.test(text) &&
       /(mandar|mande|enviar|envie|responder|responda|chamar|chame|escrever|preparar)/.test(text);
 
-    if(!looksLikeWhatsApp) return null;
+    const looksLikeMessageCommand =
+      /(mandar|mande|enviar|envie|responder|responda)\s+(mensagem|msg)/.test(text) ||
+      /(mandar|mande|enviar|envie)\s+.+\s+mensagem/.test(text);
+
+    if(!looksLikeWhatsApp && !looksLikeMessageCommand) return null;
 
     const message = extractMessageAfter(raw, [
       ' mensagem ', ' mensagem:', ' dizendo ', ' falar ', ' falando ',
