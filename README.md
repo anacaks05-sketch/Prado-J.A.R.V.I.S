@@ -66,3 +66,8 @@ Qualquer frase fora dos comandos locais vai para a IA em `/api/chat`.
 - A chave da ElevenLabs fica só no servidor da Vercel, nunca no JavaScript do app.
 - O app não envia e-mail sozinho; ele abre o rascunho no Gmail para você revisar e tocar em enviar. Isso evita precisar de OAuth completo ou senha do Gmail dentro do app.
 - No iPhone, depois do deploy, feche o app instalado e abra de novo para o novo service worker atualizar o cache.
+
+
+## Holograma Premium V2
+
+Esta versão troca o boneco simples por um avatar holográfico mais premium, com silhueta humanoide, armadura translúcida, núcleo ARC, visor iluminado, linhas HUD e plataforma animada.

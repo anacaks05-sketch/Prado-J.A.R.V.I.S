@@ -172,3 +172,34 @@ html,body{ height:100%; background:var(--bg-void); color:var(--white); font-fami
   .brand-text{ font-size:11px; }
   .status-pill span#status-text{ display:none; }
 }
+
+
+/* ---------- JARVIS AVATAR PREMIUM V2 ---------- */
+.figure-stage{ width:min(39vh, 266px); height:min(58vh, 450px); }
+.holo-avatar{ transform-origin:50% 55%; }
+.avatar-aura path{ fill:url(#avatarAura); stroke:rgba(126,247,255,0.12); stroke-width:1.2; animation:aura-wave 4s ease-in-out infinite; }
+.avatar-body path{ stroke:url(#holoStroke); stroke-width:1.2; stroke-linejoin:round; stroke-linecap:round; }
+.avatar-silhouette{ fill:rgba(17,220,255,0.055); stroke:rgba(180,252,255,0.36); stroke-width:1.05; }
+.helmet-main,.torso-core,.pelvis-armor,.upper-arm,.forearm,.thigh,.shin{ fill:url(#armorFill); }
+.helmet-rim,.jaw-line{ fill:none; stroke:rgba(202,253,255,.78); stroke-width:1.15; }
+.visor-premium{ fill:url(#visorGrad); stroke:#c8fbff; stroke-width:1; filter:drop-shadow(0 0 8px rgba(0,217,255,.85)); animation:visor-glow 2.8s ease-in-out infinite; }
+.neck-armor,.shoulder-armor,.chest-plate,.sternum,.abdomen{ fill:url(#innerFill); }
+.hand{ fill:rgba(66,238,255,.13); }
+.avatar-lines{ fill:none; stroke:rgba(188,251,255,.68); stroke-width:1.08; stroke-linecap:round; opacity:.72; stroke-dasharray:96; stroke-dashoffset:0; animation:avatar-line-flow 5.8s linear infinite; }
+.avatar-core{ fill:none; stroke-linecap:round; }
+.avatar-core .core-ring-outer{ stroke:rgba(255,179,66,.86); stroke-width:1.7; stroke-dasharray:14 9; animation:jarvis-core-spin 5s linear infinite; }
+.avatar-core .core-ring-inner{ stroke:rgba(108,245,255,.94); stroke-width:1.6; stroke-dasharray:44 18; animation:jarvis-core-spin 3.2s linear infinite reverse; }
+.avatar-core .core-light{ fill:url(#coreGlow); stroke:#f8ffff; stroke-width:.7; filter:drop-shadow(0 0 16px rgba(0,217,255,.95)); animation:core-halo-pulse 1.55s ease-in-out infinite; }
+.avatar-core path{ stroke:rgba(127,236,255,.62); stroke-width:1; stroke-dasharray:5 7; }
+.avatar-scan-lines{ fill:none; stroke:rgba(0,255,199,.6); stroke-width:1.15; stroke-linecap:round; stroke-dasharray:18 12; filter:drop-shadow(0 0 5px rgba(0,255,199,.55)); animation:data-flow 1.7s linear infinite; }
+.platform-premium ellipse,.platform-premium path{ stroke:rgba(66,234,255,.55); stroke-width:1.15; }
+#core-canvas{ width:86px; height:86px; top:40.2%; opacity:.88; }
+
+@keyframes avatar-line-flow{ to{ stroke-dashoffset:-192; } }
+@keyframes jarvis-core-spin{ to{ stroke-dashoffset:-160; } }
+@keyframes visor-glow{ 0%,100%{ opacity:.78; } 50%{ opacity:1; } }
+@keyframes aura-wave{ 0%,100%{ opacity:.62; transform:scale(.985); } 50%{ opacity:1; transform:scale(1.02); } }
+@media (max-width: 980px){
+  .figure-stage{ width:min(57vw, 238px); height:min(92vw, 405px); }
+  #core-canvas{ width:78px; height:78px; top:40.3%; }
+}

@@ -87,76 +87,156 @@
     <section class="core-stage">
       <div class="figure-stage" id="figure-stage">
         <div class="figure-glow"></div>
-        <svg class="figure-svg" viewBox="0 0 240 430" id="figure-svg" aria-hidden="true">
+        <svg class="figure-svg holo-avatar" viewBox="0 0 260 440" id="figure-svg" aria-hidden="true">
           <defs>
-            <filter id="glow-filter" x="-60%" y="-60%" width="220%" height="220%">
-              <feGaussianBlur stdDeviation="2.7" result="blur"/>
+            <filter id="glow-filter" x="-70%" y="-70%" width="240%" height="240%">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
               <feMerge>
                 <feMergeNode in="blur"/>
                 <feMergeNode in="SourceGraphic"/>
               </feMerge>
             </filter>
+            <filter id="soft-body-glow" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur stdDeviation="4.6" result="bodyBlur"/>
+              <feColorMatrix in="bodyBlur" type="matrix" values="0 0 0 0 0  0 0 0 0 0.86  0 0 0 0 1  0 0 0 .58 0" result="cyanBlur"/>
+              <feMerge>
+                <feMergeNode in="cyanBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
             <linearGradient id="holoStroke" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#d9fbff"/>
-              <stop offset="0.42" stop-color="#00d9ff"/>
-              <stop offset="1" stop-color="#0a4a5c"/>
+              <stop offset="0" stop-color="#f4feff"/>
+              <stop offset="0.36" stop-color="#36eaff"/>
+              <stop offset="0.72" stop-color="#00a8d8"/>
+              <stop offset="1" stop-color="#06485f"/>
             </linearGradient>
-            <radialGradient id="holoFill" cx="50%" cy="38%" r="62%">
-              <stop offset="0" stop-color="#7fecff" stop-opacity="0.26"/>
-              <stop offset="0.45" stop-color="#00d9ff" stop-opacity="0.09"/>
-              <stop offset="1" stop-color="#00131a" stop-opacity="0"/>
+            <linearGradient id="armorFill" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#e6feff" stop-opacity="0.28"/>
+              <stop offset="0.46" stop-color="#18dfff" stop-opacity="0.105"/>
+              <stop offset="1" stop-color="#001d28" stop-opacity="0.015"/>
+            </linearGradient>
+            <linearGradient id="innerFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffffff" stop-opacity="0.20"/>
+              <stop offset="0.5" stop-color="#38eaff" stop-opacity="0.08"/>
+              <stop offset="1" stop-color="#00ffc8" stop-opacity="0.025"/>
+            </linearGradient>
+            <radialGradient id="avatarAura" cx="50%" cy="35%" r="64%">
+              <stop offset="0" stop-color="#7df7ff" stop-opacity="0.16"/>
+              <stop offset="0.54" stop-color="#00d9ff" stop-opacity="0.052"/>
+              <stop offset="1" stop-color="#000713" stop-opacity="0"/>
             </radialGradient>
+            <radialGradient id="coreGlow" cx="50%" cy="50%" r="60%">
+              <stop offset="0" stop-color="#ffffff"/>
+              <stop offset="0.24" stop-color="#7ff9ff"/>
+              <stop offset="0.58" stop-color="#00d9ff" stop-opacity="0.82"/>
+              <stop offset="1" stop-color="#00d9ff" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="visorGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#012332"/>
+              <stop offset="0.5" stop-color="#8cfaff" stop-opacity="0.9"/>
+              <stop offset="1" stop-color="#012332"/>
+            </linearGradient>
           </defs>
 
-          <g class="holo-rings" filter="url(#glow-filter)">
-            <ellipse cx="120" cy="386" rx="74" ry="16"/>
-            <ellipse cx="120" cy="389" rx="42" ry="8"/>
-            <path d="M42 368 C70 350 170 350 198 368"/>
+          <g class="avatar-aura">
+            <path d="M130 15 C185 18 216 80 212 176 C207 289 179 374 130 421 C81 374 53 289 48 176 C44 80 75 18 130 15 Z"/>
           </g>
 
-          <g class="figure-aura">
-            <path d="M120 17 C168 18 203 72 205 156 C207 255 175 354 120 399 C65 354 33 255 35 156 C37 72 72 18 120 17 Z"/>
+          <g class="holo-rings platform-premium" filter="url(#glow-filter)">
+            <ellipse cx="130" cy="401" rx="78" ry="17"/>
+            <ellipse cx="130" cy="401" rx="50" ry="9"/>
+            <ellipse cx="130" cy="401" rx="22" ry="4"/>
+            <path d="M45 386 C77 364 183 364 215 386"/>
+            <path d="M68 414 C96 427 164 427 192 414"/>
           </g>
 
-          <g class="figure-shell" filter="url(#glow-filter)">
-            <path class="helmet" d="M91 52 C93 31 106 21 120 21 C134 21 147 31 149 52 L146 78 C140 91 131 98 120 98 C109 98 100 91 94 78 Z"/>
-            <path class="visor" d="M100 55 C112 48 128 48 140 55 L136 66 C125 62 115 62 104 66 Z"/>
-            <path class="neck" d="M104 96 L136 96 L143 119 L97 119 Z"/>
-            <path class="torso" d="M74 121 L166 121 L186 207 L158 262 L82 262 L54 207 Z"/>
-            <path class="core-halo" d="M101 153 C113 142 127 142 139 153 C150 165 150 183 139 195 C127 207 113 207 101 195 C90 183 90 165 101 153 Z"/>
-            <path class="pelvis" d="M85 266 L155 266 L143 305 L97 305 Z"/>
-            <path class="arm left" d="M70 132 L45 184 L39 250 L54 253 L64 197 L90 148 Z"/>
-            <path class="arm right" d="M170 132 L195 184 L201 250 L186 253 L176 197 L150 148 Z"/>
-            <path class="leg left" d="M98 306 L84 377 L100 395 L116 309 Z"/>
-            <path class="leg right" d="M142 306 L156 377 L140 395 L124 309 Z"/>
+          <g class="avatar-body" filter="url(#soft-body-glow)">
+            <!-- refined translucent humanoid silhouette -->
+            <path class="avatar-silhouette" d="M130 25
+              C143 25 154 36 156 52
+              C158 67 154 80 146 90
+              L145 103 L162 109
+              C181 115 194 129 198 148
+              L212 218
+              C215 235 210 247 199 253
+              L187 248 L180 201 L168 158
+              L163 245 L149 296 L154 377
+              C156 395 149 409 137 412
+              L131 349 L123 412
+              C111 409 104 395 106 377
+              L111 296 L97 245 L92 158
+              L80 201 L73 248 L61 253
+              C50 247 45 235 48 218
+              L62 148
+              C66 129 79 115 98 109
+              L115 103 L114 90
+              C106 80 102 67 104 52
+              C106 36 117 25 130 25 Z"/>
+
+            <!-- helmet/head -->
+            <path class="helmet-main" d="M104 57 C106 36 117 25 130 25 C143 25 154 36 156 57 C157 72 153 84 145 93 C140 99 134 102 130 102 C126 102 120 99 115 93 C107 84 103 72 104 57 Z"/>
+            <path class="helmet-rim" d="M110 59 C115 48 121 43 130 43 C139 43 145 48 150 59"/>
+            <path class="visor-premium" d="M112 66 C122 60 138 60 148 66 L145 78 C136 83 124 83 115 78 Z"/>
+            <path class="jaw-line" d="M116 85 C124 91 136 91 144 85"/>
+
+            <!-- neck/shoulders -->
+            <path class="neck-armor" d="M115 104 L145 104 L150 125 L110 125 Z"/>
+            <path class="shoulder-armor left" d="M98 118 C82 122 70 132 66 149 L60 175 C76 172 91 160 103 143 Z"/>
+            <path class="shoulder-armor right" d="M162 118 C178 122 190 132 194 149 L200 175 C184 172 169 160 157 143 Z"/>
+
+            <!-- torso/armor -->
+            <path class="torso-core" d="M93 128 L167 128 L181 187 L164 260 L145 294 L115 294 L96 260 L79 187 Z"/>
+            <path class="chest-plate left" d="M98 137 L126 128 L123 174 L94 190 L84 162 Z"/>
+            <path class="chest-plate right" d="M162 137 L134 128 L137 174 L166 190 L176 162 Z"/>
+            <path class="sternum" d="M126 132 L134 132 L140 223 L130 264 L120 223 Z"/>
+            <path class="abdomen" d="M100 222 L121 232 L130 268 L139 232 L160 222 L151 267 L140 288 L120 288 L109 267 Z"/>
+            <path class="pelvis-armor" d="M113 294 L147 294 L155 317 L142 336 L118 336 L105 317 Z"/>
+
+            <!-- sleek segmented arms -->
+            <path class="upper-arm left" d="M73 169 L60 219 C57 231 60 241 68 247 L77 241 L84 187 Z"/>
+            <path class="upper-arm right" d="M187 169 L200 219 C203 231 200 241 192 247 L183 241 L176 187 Z"/>
+            <path class="forearm left" d="M68 247 L59 301 C57 315 62 324 71 327 L81 315 L77 250 Z"/>
+            <path class="forearm right" d="M192 247 L201 301 C203 315 198 324 189 327 L179 315 L183 250 Z"/>
+            <path class="hand left" d="M60 323 L72 326 L69 346 C60 343 56 335 60 323 Z"/>
+            <path class="hand right" d="M200 323 L188 326 L191 346 C200 343 204 335 200 323 Z"/>
+
+            <!-- longer legs -->
+            <path class="thigh left" d="M108 326 L126 334 L121 381 L108 406 C99 403 96 392 99 378 Z"/>
+            <path class="thigh right" d="M152 326 L134 334 L139 381 L152 406 C161 403 164 392 161 378 Z"/>
+            <path class="shin left" d="M108 406 L123 406 L119 423 L96 423 C96 414 101 409 108 406 Z"/>
+            <path class="shin right" d="M152 406 L137 406 L141 423 L164 423 C164 414 159 409 152 406 Z"/>
           </g>
 
-          <g class="figure-panels" filter="url(#glow-filter)">
-            <path d="M82 135 L110 121 L120 152 L91 172 Z"/>
-            <path d="M158 135 L130 121 L120 152 L149 172 Z"/>
-            <path d="M76 197 L105 211 L91 250"/>
-            <path d="M164 197 L135 211 L149 250"/>
-            <path d="M96 282 L115 286"/>
-            <path d="M144 282 L125 286"/>
-            <path d="M90 334 L108 345"/>
-            <path d="M150 334 L132 345"/>
+          <g class="avatar-lines" filter="url(#glow-filter)">
+            <path d="M86 160 L123 179 L93 197"/>
+            <path d="M174 160 L137 179 L167 197"/>
+            <path d="M101 213 C115 223 145 223 159 213"/>
+            <path d="M112 253 C122 260 138 260 148 253"/>
+            <path d="M109 298 L130 315 L151 298"/>
+            <path d="M72 203 L81 239"/>
+            <path d="M188 203 L179 239"/>
+            <path d="M111 354 L122 367"/>
+            <path d="M149 354 L138 367"/>
+            <path d="M112 118 C120 124 140 124 148 118"/>
           </g>
 
-          <g class="figure-mesh">
-            <line x1="54" y1="207" x2="186" y2="207"/>
-            <line x1="68" y1="154" x2="172" y2="154"/>
-            <line x1="79" y1="234" x2="161" y2="234"/>
-            <line x1="120" y1="22" x2="120" y2="398"/>
-            <path d="M54 207 C82 192 158 192 186 207"/>
-            <path d="M74 121 C98 137 142 137 166 121"/>
-            <path d="M84 377 C102 365 138 365 156 377"/>
+          <g class="avatar-core" filter="url(#glow-filter)">
+            <circle cx="130" cy="176" r="35" class="core-ring-outer"/>
+            <circle cx="130" cy="176" r="23" class="core-ring-inner"/>
+            <circle cx="130" cy="176" r="12" class="core-light"/>
+            <path d="M130 142 V124"/>
+            <path d="M130 229 V211"/>
+            <path d="M95 176 H79"/>
+            <path d="M165 176 H181"/>
           </g>
 
-          <g class="data-streams">
-            <path d="M30 98 H74"/>
-            <path d="M166 98 H210"/>
-            <path d="M24 284 H72"/>
-            <path d="M168 284 H216"/>
+          <g class="avatar-scan-lines">
+            <path d="M43 86 H82"/>
+            <path d="M178 86 H217"/>
+            <path d="M34 198 H67"/>
+            <path d="M193 198 H226"/>
+            <path d="M52 327 H87"/>
+            <path d="M173 327 H208"/>
           </g>
         </svg>
         <div class="figure-scanline"></div>
