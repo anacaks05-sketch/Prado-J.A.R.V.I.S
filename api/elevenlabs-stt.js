@@ -55,6 +55,20 @@ module.exports = async function handler(req, res) {
     const raw = await upstream.text();
 
     if (!upstream.ok) {
+      let parsed = {};
+      try { parsed = JSON.parse(raw); } catch (e) {}
+
+      const detail = parsed.detail || parsed;
+      const msg = typeof detail === 'object' ? JSON.stringify(detail) : String(detail || raw || '');
+
+      if (msg.includes('missing_permissions') || msg.includes('speech_to_text')) {
+        res.status(403).json({
+          code: 'ELEVENLABS_STT_PERMISSION',
+          error: 'Sua chave ElevenLabs está sem permissão de Fala para Texto / Speech to Text. Ative Speech to Text na chave da ElevenLabs ou crie uma nova chave com esse acesso.'
+        });
+        return;
+      }
+
       res.status(upstream.status).json({
         error: raw || 'Erro na API ElevenLabs Speech to Text.'
       });
